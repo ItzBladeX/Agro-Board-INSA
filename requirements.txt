@@ -1,0 +1,6 @@
+fastapi # Backend Framerowk
+uvicorn # FastAPI server
+sqlmodel # ORM
+requests # Requests
+geocoder # long and lat (location) finder
+pydantic-settings # .env useage
