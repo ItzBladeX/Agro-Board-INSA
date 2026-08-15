@@ -90,7 +90,7 @@ class _YieldTrendPainter extends CustomPainter {
         ),
     ];
 
-    // Draw line
+    // line
     if (points.length > 1) {
       final path = Path()..moveTo(points.first.dx, points.first.dy);
       for (final value in points.skip(1)) {
