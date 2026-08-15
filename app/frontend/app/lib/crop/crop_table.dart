@@ -12,7 +12,7 @@ class CropTable extends StatelessWidget {
     header: const Text('Crop records'),
     rowsPerPage: crops.length < 5 ? crops.length : 5,
     columns: const [
-      DataColumn(label: Text("crop id")),
+      DataColumn(label: Text("crop Id")),
       DataColumn(label: Text('crop Name')),
       DataColumn(label: Text('Season(planting - harvesting)')),
       DataColumn(label: Text('Expected Yield (kg/ha)')),
