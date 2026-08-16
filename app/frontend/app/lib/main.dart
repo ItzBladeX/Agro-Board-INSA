@@ -9,37 +9,100 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Agro Board'),
-        ),
-        body: const Center(
-          child: Text('Agro Board'),
+    return MaterialApp(debugShowCheckedModeBanner: false, home: AgroBoard());
+  }
+}
 
-        ),
-        bottomNavigationBar: Row(
-          children:[
-            ElevatedButton(
-              onPressed:(){},
-              child:Text('Home'),
-            ),
-            ElevatedButton(
-              onPressed:(){},
-              child:Text('Crop'),
-            ),
-            ElevatedButton(
-              onPressed:(){},
-              child:Text('Livestock'),
-            ),
-            ElevatedButton(
-              onPressed:(){},
-              child:Text('Profile'),
-            ),
-          ],
-        ),
+class AgroBoard extends StatelessWidget {
+  const AgroBoard({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Agro Board')),
+      bottomNavigationBar: Row(
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+              );
+            },
+            child: Text('Home'),
+          ),
+          ElevatedButton(onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CropPage()),
+              );
+          },
+           child: Text('Crop')),
+
+          ElevatedButton(onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LivestockPage()),
+              );
+          }, 
+          child: Text('LiveStock')),
+
+          ElevatedButton(onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
+          }, 
+          child: Text('Profile')),
+        ],
       ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Home')),
+      body: Center(child: Text('Welcome to the Home Page!')),
+    );
+  }
+}
+
+class CropPage extends StatelessWidget {
+  const CropPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Crop')),
+      body: Center(child: Text('Welcome to the Crop Page!')),
+    );
+  }
+}
+
+class LivestockPage extends StatelessWidget {
+  const LivestockPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('LiveStock')),
+      body: Center(child: Text('Welcome to the LiveStock Page!')),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Profile')),
+      body: Center(child: Text('Welcome to the Profile Page!')),
     );
   }
 }
