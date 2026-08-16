@@ -1,108 +1,73 @@
 import 'package:flutter/material.dart';
+import "profile/profile.dart";
+import "crop/crop.dart";
+import "home/home.dart";
+import "livestock/livestock.dart";
 
 void main() {
   runApp(const MyApp());
+  
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: AgroBoard());
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class AgroBoard extends StatelessWidget {
-  const AgroBoard({super.key});
+class _MyAppState extends State<MyApp> {
+  int _currentIndex = 0;
+
+  final List<Widget> pageList = [
+    const HomePage(),
+    const CropPage(),
+    const LivestockPage(),
+    const ProfilePage(),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Agro Board')),
-      bottomNavigationBar: Row(
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-              );
-            },
-            child: Text('Home'),
-          ),
-          ElevatedButton(onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CropPage()),
-              );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+
+      home: Scaffold(
+        body: IndexedStack(index: _currentIndex, children: pageList),
+
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
           },
-           child: Text('Crop')),
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+              backgroundColor: Colors.green,
+            ),
 
-          ElevatedButton(onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LivestockPage()),
-              );
-          }, 
-          child: Text('LiveStock')),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grass),
+              label: 'Crop',
+              backgroundColor: Colors.green,
+            ),
 
-          ElevatedButton(onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
-              );
-          }, 
-          child: Text('Profile')),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.pets),
+              label: 'LiveStock',
+              backgroundColor: Colors.green,
+            ),
+
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+              backgroundColor: Colors.green,
+            ),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Home')),
-      body: Center(child: Text('Welcome to the Home Page!')),
-    );
-  }
-}
-
-class CropPage extends StatelessWidget {
-  const CropPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Crop')),
-      body: Center(child: Text('Welcome to the Crop Page!')),
-    );
-  }
-}
-
-class LivestockPage extends StatelessWidget {
-  const LivestockPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('LiveStock')),
-      body: Center(child: Text('Welcome to the LiveStock Page!')),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Profile')),
-      body: Center(child: Text('Welcome to the Profile Page!')),
     );
   }
 }
