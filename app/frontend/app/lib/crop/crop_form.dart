@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import './models/crop_model.dart';
 
 class CropForm extends StatefulWidget {
@@ -13,7 +12,7 @@ class CropForm extends StatefulWidget {
 
 class _CropFormState extends State<CropForm> {
   final _formKey = GlobalKey<FormState>();
-  final _cropIdControler = TextEditingController();
+  final _cropIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _seasonController = TextEditingController();
   final _expectedYieldController = TextEditingController();
@@ -21,7 +20,7 @@ class _CropFormState extends State<CropForm> {
 
   @override
   void dispose() {
-    _cropIdControler.dispose();
+    _cropIdController.dispose();
     _nameController.dispose();
     _seasonController.dispose();
     _expectedYieldController.dispose();
@@ -30,90 +29,111 @@ class _CropFormState extends State<CropForm> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-
-    widget.onSubmit(
-      CropRecord(
-        cropId: double.parse(_cropIdControler.text.trim()),
-        name: _nameController.text.trim(),
-        season: _seasonController.text.trim(),
-        expectedYieldKgPerHa: double.parse(
-          _expectedYieldController.text.trim(),
-        ),
-        actualYieldKgPerHa: double.parse(_actualYieldController.text.trim()),
-      ),
-    );
-
-    _formKey.currentState!.reset();
-    _nameController.clear();
-    _seasonController.clear();
-    _expectedYieldController.clear();
-    _actualYieldController.clear();
+    if (_formKey.currentState!.validate()) {
+      final newCrop = CropRecord(
+        cropId:
+            double.tryParse(_cropIdController.text) ??
+            DateTime.now().millisecondsSinceEpoch.toDouble(),
+        name: _nameController.text,
+        season: _seasonController.text,
+        expectedYieldKgPerHa:
+            double.tryParse(_expectedYieldController.text) ?? 0.0,
+        actualYieldKgPerHa: double.tryParse(_actualYieldController.text) ?? 0.0,
+      );
+      widget.onSubmit(newCrop);
+    }
   }
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.all(16),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Form(
         key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Add crop data',
+              'Add New Crop Entry',
               style: Theme.of(context).textTheme.titleLarge,
             ),
+            const SizedBox(height: 12),
             TextFormField(
-              controller: _cropIdControler,
-              decoration: const InputDecoration(labelText: 'crop Id'),
+              controller: _cropIdController,
               keyboardType: TextInputType.number,
-              validator: _positiveNumber,
+              decoration: const InputDecoration(
+                labelText: 'Crop ID',
+                border: OutlineInputBorder(),
+              ),
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Required ID' : null,
             ),
+            const SizedBox(height: 10),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Crop name'),
-              validator: _required,
+              decoration: const InputDecoration(
+                labelText: 'Crop Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Required Name' : null,
             ),
+            const SizedBox(height: 10),
             TextFormField(
               controller: _seasonController,
               decoration: const InputDecoration(
-                labelText: 'Season(planting-harvestng)',
+                labelText: 'Season Window',
+                border: OutlineInputBorder(),
               ),
-              validator: _required,
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Required Season' : null,
             ),
-            TextFormField(
-              controller: _expectedYieldController,
-              decoration: const InputDecoration(
-                labelText: 'Expected Yield (kg/ha)',
-              ),
-              keyboardType: TextInputType.number,
-              validator: _positiveNumber,
-            ),
-            TextFormField(
-              controller: _actualYieldController,
-              decoration: const InputDecoration(
-                labelText: 'Actual Yield (kg/ha)',
-              ),
-              keyboardType: TextInputType.number,
-              validator: _positiveNumber,
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _expectedYieldController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Expected (kg/ha)',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? 'Required' : null,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextFormField(
+                    controller: _actualYieldController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Actual (kg/ha)',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? 'Required' : null,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _submit, child: const Text('Add crop')),
+            ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Save Record Entry'),
+            ),
           ],
         ),
       ),
-    ),
-  );
-
-  String? _required(String? value) =>
-      value == null || value.trim().isEmpty ? 'This field is required.' : null;
-
-  String? _positiveNumber(String? value) {
-    final number = double.tryParse(value ?? '');
-    return number == null || number <= 0
-        ? 'Enter a number greater than zero.'
-        : null;
+    );
   }
 }

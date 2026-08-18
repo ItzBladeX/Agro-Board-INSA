@@ -1,7 +1,5 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-
 import './models/crop_model.dart';
 
 class CropChart extends StatelessWidget {
@@ -11,7 +9,7 @@ class CropChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.all(16),
+    margin: const EdgeInsets.all(10),
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -24,8 +22,8 @@ class CropChart extends StatelessWidget {
           const SizedBox(height: 8),
           const Text('Expected vs actual yield (kg/ha)'),
           const SizedBox(height: 8),
-          Row(
-            children: const [
+          const Row(
+            children: [
               _Legend(color: Colors.green, label: 'Expected'),
               SizedBox(width: 12),
               _Legend(color: Colors.amber, label: 'Actual'),
@@ -78,11 +76,9 @@ class _YieldTrendPainter extends CustomPainter {
     if (crops.isEmpty) return;
 
     final expectedValues = crops
-        .map((crop) => crop.expectedYieldKgPerHa.toDouble())
+        .map((crop) => crop.expectedYieldKgPerHa)
         .toList();
-    final actualValues = crops
-        .map((crop) => crop.actualYieldKgPerHa.toDouble())
-        .toList();
+    final actualValues = crops.map((crop) => crop.actualYieldKgPerHa).toList();
     final allValues = [...expectedValues, ...actualValues];
     final maxValue = _roundedMaximum(
       allValues.reduce((first, second) => math.max(first, second)),

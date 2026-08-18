@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: Scaffold(
-      body: Center(
-        child: Text('Profile'),
-      ),
-    ),
-  ));
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('Welcome to the Profile Page!'));
+  }
 }
