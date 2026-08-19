@@ -1,8 +1,36 @@
-fastapi # Backend Framerowk
-uvicorn # FastAPI server
-sqlmodel # ORM
-requests # Requests
-geocoder # long and lat (location) finder
-pydantic-settings # .env useage
-cache3 # Cacheing data
-pytest # Py testing
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.14.2
+bcrypt==4.0.1
+certifi==2026.7.22
+cffi==2.1.1
+charset-normalizer==3.5.1
+click==8.4.2
+cryptography==50.0.0
+decorator==5.3.1
+ecdsa==0.19.2
+fastapi==0.141.1
+future==1.0.0
+geocoder==1.38.1
+greenlet==3.5.5
+h11==0.16.0
+idna==3.18
+passlib==1.7.4
+pyasn1==0.6.4
+pycparser==3.0
+pydantic==2.13.4
+pydantic-settings==2.15.0
+pydantic_core==2.46.4
+python-dotenv==1.2.2
+python-jose==3.5.0
+ratelim==0.1.6
+requests==2.34.2
+rsa==4.9.1
+six==1.17.0
+SQLAlchemy==2.0.52
+sqlmodel==0.0.39
+starlette==1.6.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+urllib3==2.7.0
+uvicorn==0.52.3

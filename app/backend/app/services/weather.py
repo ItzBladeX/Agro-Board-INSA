@@ -1,8 +1,8 @@
 import geocoder, requests
-from cache3 import SafeCache
+# from cache3 import LazyCache
 
-cache = SafeCache()
-@cache.memoize(timeout = 1800)
+# cache = LazyCache()
+# @cache.memoize(timeout = 1800)
 def get_weather():
     raw = fetch_weather()
     if raw is None:
