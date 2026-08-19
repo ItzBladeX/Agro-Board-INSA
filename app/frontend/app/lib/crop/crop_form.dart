@@ -8,19 +8,31 @@ class CropForm extends StatefulWidget {
 }
 
 class _CropFormState extends State<CropForm> {
-  DateTime? plantingDate;
+  DateTime? plantedDate;
   DateTime? harvestDate;
+
+  Map<String, dynamic> cropData = {};
+
+  String? selectedCrop;
+
+  final TextEditingController cropNameController = TextEditingController();
+  final TextEditingController prodStartYearController = TextEditingController();
+  final TextEditingController prodEndYearController = TextEditingController();
+  final TextEditingController plantedDateController = TextEditingController();
+  final TextEditingController harvestDateController = TextEditingController();
+  final TextEditingController cropYieldController = TextEditingController();
+  final TextEditingController prodCostController = TextEditingController();
+  final TextEditingController revenueController = TextEditingController();
+  final TextEditingController profitController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Crop Form')),
       body: Form(
-        child: Column(
+        child: ListView(
           children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Crop ID'),
-            ),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Crop Name'),
               items: const [
@@ -32,36 +44,48 @@ class _CropFormState extends State<CropForm> {
                 DropdownMenuItem(value: 'Potato', child: Text('Potato')),
               ],
               onChanged: (value) {
+                setState(() {
+                  selectedCrop = value;
+                });
                 // Handle dropdown change
               },
             ),
-            DropdownButtonFormField<int>(
-              decoration: const InputDecoration(labelText: 'Quantity'),
-              items: const [
-                DropdownMenuItem(value: 10, child: Text('10')),
-                DropdownMenuItem(value: 25, child: Text('25')),
-                DropdownMenuItem(value: 50, child: Text('50')),
-                DropdownMenuItem(value: 100, child: Text('100')),
-                DropdownMenuItem(value: 250, child: Text('250')),
-                DropdownMenuItem(value: 500, child: Text('500')),
-                DropdownMenuItem(value: 1000, child: Text('1000')),
-                DropdownMenuItem(value: 2500, child: Text('2500')),
-                DropdownMenuItem(value: 5000, child: Text('5000')),
-              ],
-              onChanged: (value) {
-                // 3a  dropdown change
+            TextFormField(
+              controller: prodStartYearController,
+              decoration: const InputDecoration(labelText: 'prod_start_year'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter year';
+                }
+
+                final year = int.tryParse(value);
+                if (year == null) {
+                  return 'please enter a valid number';
+                }
+                if (year < 1900 || year > 2200) {
+                  return 'Year must be between 1900 & 2200';
+                }
+                return null;
               },
             ),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Unit'),
-              items: const [
-                DropdownMenuItem(value: 'Kg', child: Text('Kg')),
-                DropdownMenuItem(value: 'quintal', child: Text('quintal')),
-                DropdownMenuItem(value: 'ton', child: Text('ton')),
-                DropdownMenuItem(value: 'bag', child: Text('bag')),
-              ],
-              onChanged: (value) {
-                // Handle dropdown change
+            TextFormField(
+              controller: prodEndYearController,
+              decoration: const InputDecoration(labelText: 'prod_end_year'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter year';
+                }
+
+                final year = int.tryParse(value);
+                if (year == null) {
+                  return 'please enter a valid number';
+                }
+                if (year < 1900 || year > 2200) {
+                  return 'Year must be between 1900 & 2200';
+                }
+                return null;
               },
             ),
             TextButton(
@@ -74,14 +98,14 @@ class _CropFormState extends State<CropForm> {
                 );
                 if (pickedDate != null) {
                   setState(() {
-                    plantingDate = pickedDate;
+                    plantedDate = pickedDate;
                   });
                 }
               },
               child: Text(
-                plantingDate == null
+                plantedDate == null
                     ? 'Select Planting Date'
-                    : 'Planting Date: ${plantingDate!.day}/${plantingDate!.month}/${plantingDate!.year}',
+                    : 'Planted Date: ${plantedDate!.day}/${plantedDate!.month}/${plantedDate!.year}',
               ),
             ),
             TextButton(
@@ -105,12 +129,55 @@ class _CropFormState extends State<CropForm> {
               ),
             ),
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Add Crop'),
+              controller: cropYieldController,
+              decoration: const InputDecoration(labelText: 'Crop Yield in Kg'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
             ),
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Update Crop'),
+              controller: prodCostController,
+              decoration: const InputDecoration(labelText: 'Prod Cost in ETB'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
             ),
-            TextButton(child: const Text('Submit'), onPressed: () {}),
+            TextFormField(
+              controller: revenueController,
+              decoration: const InputDecoration(labelText: 'Revenue in ETB'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            TextFormField(
+              controller: profitController,
+              decoration: const InputDecoration(labelText: 'Profit in ETB'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            TextFormField(
+              controller: notesController,
+              decoration: const InputDecoration(labelText: 'Notes'),
+            ),
+            TextButton(
+              child: const Text('Submit'),
+              onPressed: () {
+                cropData['Crop Name'] = selectedCrop;
+                cropData['prod_start_year'] = int.parse(
+                  prodStartYearController.text,
+                );
+                cropData['prod_end_year'] = int.parse(
+                  prodEndYearController.text,
+                );
+                cropData['Planted date'] = plantedDate;
+                cropData['Harvest date'] = harvestDate;
+                cropData['Crop Yield in Kg'] = double.parse(
+                  cropYieldController.text,
+                );
+                cropData['Prod Cost in ETB'] = double.parse(
+                  prodCostController.text,
+                );
+                cropData['Revenue in ETB'] = double.parse(
+                  revenueController.text,
+                );
+                cropData['Profit in ETB'] = double.parse(profitController.text);
+                cropData['Notes'] = notesController.text;
+                print(cropData);
+              },
+            ),
           ],
         ),
       ),
