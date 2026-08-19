@@ -6,7 +6,7 @@ class Livestock(SQLModel, table = True):
     __table_args__ = {'extend_existing': True}
     id: int | None = Field(default=None, primary_key=True)
     user_id : int = Field(foreign_key= 'user.id')
-    livestock_type_id: int = Field(foreign_key= 'croptype.id')
+    livestock_type_id: int = Field(foreign_key= 'livestocktype.id')
 
     name: str
 

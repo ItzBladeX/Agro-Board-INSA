@@ -32,3 +32,7 @@ class UpdateCropRequest(CropBase):
 
 class GetCropResponse(CropBase):
     id: int
+
+class GetCropTypesResponse(BaseModel):
+    name: str 
+    growth_month: int

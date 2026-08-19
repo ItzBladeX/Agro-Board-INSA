@@ -8,12 +8,12 @@ class BaseUser(BaseModel):
     middle_name: str = Field(min_length = 1, max_length = 60)
     last_name: str = Field(min_length = 1, max_length = 60)
 
-    email: str
+    phone_number: str
 
     birth_date: date| None = None
-    age: int = Field(ge=0, le=120)
+    age: int | None = Field(default=None, ge=0, le=120)
 
-    gender: str = Field(min_length = 3, max_length = 3, default = None)
+    gender: str | None = Field(min_length = 1, max_length = 1, default = None)
 
     server_id : str| None = None
     user_id: str| None = None
@@ -25,7 +25,7 @@ class CreateUserRequest(BaseUser):
     passwd: str
 
 class UpdateUserRequest(BaseUser):
-    pass
+    passwd: str
 
 class GetUserResponse(BaseUser):
     id: int

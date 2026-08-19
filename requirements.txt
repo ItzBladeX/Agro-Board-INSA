@@ -4,3 +4,5 @@ sqlmodel # ORM
 requests # Requests
 geocoder # long and lat (location) finder
 pydantic-settings # .env useage
+cache3 # Cacheing data
+pytest # Py testing
