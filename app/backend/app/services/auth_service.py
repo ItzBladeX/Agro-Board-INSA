@@ -4,19 +4,17 @@ from app.schemas.user import CreateUserRequest, UserLogin
 from app.core.security import hash_password, verify_password
 
 
-def register_user(session: Session, data: CreateUserRequest) -> User:
-    existing_phone = session.exec(
-        select(User).where(User.phone_number == data.phone_number)
-    ).first()
+def register_user(session: Session, data: CreateUserRequest):
+
+    existing_phone = session.exec(select(User).where(User.phone_number == data.phone_number)).first()
     if existing_phone:
         raise ValueError("Phone number already registered")
 
-    existing_username = session.exec(
-        select(User).where(User.username == data.username)
-    ).first()
+    existing_username = session.exec(select(User).where(User.username == data.username)).first()
     if existing_username:
         raise ValueError("Username already taken")
-
+    
+    
     user = User(
     username=data.username,
     first_name=data.first_name,

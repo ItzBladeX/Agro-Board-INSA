@@ -9,6 +9,7 @@ class UserRole(str, Enum):
 class User(SQLModel, table=True):
     __table_args__ = {'extend_existing': True}
     id : int | None = Field(default=None, primary_key=True)
+
     username: str
     first_name: str 
     middle_name: str
