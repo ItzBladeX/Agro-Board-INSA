@@ -31,6 +31,7 @@ class UpdateCropRequest(CropBase):
     crop_type_id: int
 
 class GetCropResponse(CropBase):
+    id: int
     user_id: int
     crop_type_id: int
 
