@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
-from app.schemas.user import CreateUserRequest ,UserLogin
+
 from app.services import register_user, authenticate_user
+from app.schemas import CreateUserRequest ,UserLogin, GetUserResponse
+from app.services import register_user, authenticate_user, get_user
 from app.core.security import create_access_token
+from app.core.dependencies import get_current_user
+from app.models import User
 from app.database import get_session
 
 
@@ -13,14 +17,12 @@ router = APIRouter(
 
 
 @router.post("/register")
-def register(
-    data: CreateUserRequest,
-    session: Session = Depends(get_session)
-):
+def register(data: CreateUserRequest, session: Session = Depends(get_session)):
     try:
          register_user(session, data)
          return {
              "success":True,
+              "phone_number": data.phone_number,
              "message":"user registered successfully"
          }
 
@@ -44,15 +46,19 @@ def login(
             detail="Invalid phone_number or password"
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been blocked"
+        )
+
     token = create_access_token({
         "sub": str(user.id)
     })
 
     return {
-        "success":True,
+        "success": True,
         "message": "logged in successfully",
         "access_token": token,
         "token_type": "bearer"
     }
-
-
