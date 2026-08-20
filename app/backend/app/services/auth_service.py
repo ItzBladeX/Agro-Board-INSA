@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 from app.models.user import User
-from app.schema.user import CreateUserRequest, UserLogin
+from app.schemas.user import CreateUserRequest, UserLogin
 from app.core.security import hash_password, verify_password
 
 
