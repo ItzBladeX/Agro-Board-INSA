@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends, APIRouter
-from app.schemas import CreateCropRequest, GetCropResponse, UpdateCropRequest
+from app.schemas import CreateCropRequest, UpdateCropRequest
+
 from app.services import create_crop, get_crop, update_crop, del_crop, drop_crops
 from app.database import get_session
 from sqlmodel import Session
 
 router = APIRouter(
     prefix="/crop",
-    tags=["CropAPI"]
+    tags=["Crop API"]
 )
 
 
@@ -20,7 +21,7 @@ def _Create_crop(new_crop:CreateCropRequest, session : Session = Depends(get_ses
 
 @router.get("/get/{user_id}")
 def _Get_crop(user_id: int,  session : Session = Depends(get_session)):
-    
+
     res = get_crop(session, user_id)
     if res['status']:
         return {"success": True,"message":"Crop Fetched successfully", "data":res['data']}
@@ -50,6 +51,7 @@ def _Drop_crops(user_id: int,  session : Session = Depends(get_session)):
     if res['status']:
         return {"success": True, "message":"Crop Dropped successfully"}
     return {"success": False,"message":"Failed to Drop Crop"}
+    
 
 
 

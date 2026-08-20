@@ -1,6 +1,6 @@
 from sqlmodel import select, or_, Session
 from app.models import Crop, CropType
-from app.schemas import CreateCropRequest,UpdateCropRequest, GetCropResponse, GetCropTypesResponse
+from app.schemas import CreateCropRequest, GetCropTypesResponse, UpdateCropRequest
 
 def create_crop(s:Session, crop:CreateCropRequest):
 
@@ -20,9 +20,9 @@ def create_crop(s:Session, crop:CreateCropRequest):
 def get_crop(s: Session,user_id):
 
     try:
-        conditions = []
-        if user_id:
-            conditions.append(Crop.user_id == user_id)
+        # conditions = []
+        # if user_id:
+        #     conditions.append(Crop.user_id == user_id)
         # if crop_id:
         #     conditions.append(Crop.id == crop_id)
         with s as session:
