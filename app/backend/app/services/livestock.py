@@ -26,7 +26,7 @@ def get_livestock(s:Session, user_id):
             if not livestocks:
                 {"status": False, "error_code": "No Livestocks Found", "data": None}
 
-        livestocks = [GetLivestockResponse.model_validate(livestock) for livestock in livestocks]
+        livestocks = [GetLivestockResponse.model_validate(livestock.model_dump()) for livestock in livestocks]
         ordered_livestock = sorted(livestocks, key=lambda livestock: (livestock.prod_start_year, livestock.prod_end_year), reverse=True)
         
         return {"status": True, "error_code": None, "data": ordered_livestock}

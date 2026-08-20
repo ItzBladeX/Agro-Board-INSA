@@ -1,4 +1,5 @@
 import geocoder, requests
+from app.schemas import GetWeatherResponse
 # from cache3 import LazyCache
 
 # cache = LazyCache()
@@ -6,7 +7,8 @@ import geocoder, requests
 def get_weather():
     raw = fetch_weather()
     if raw is None:
-        return {"status": False, "error_code": "API Timed Out", "data": None}
+        return {"status": False, "error_code": "[API Timed Out]", "data": None}
+    
     return {"status": True, "error_code": None, "data": perse_weather(raw)}
 
 def fetch_weather():
@@ -22,14 +24,16 @@ def fetch_weather():
         print(f"Error fetching weather: {e}")
         return None
     
-def perse_weather(data):
+def perse_weather(raw):
     geo = geocoder.ip('me')
-    return {
-        "temperature" : round(data["current_weather"]["temperature"],2),
-        "windspeed" : round(data["current_weather"]["windspeed"],2),
-        "rainfall" : round(sum(data["hourly"]["precipitation"][:12]),2),
+    data = {
+        "temperature" : round(raw["current_weather"]["temperature"],2),
+        "rainfall" : round(sum(raw["hourly"]["precipitation"][:12]),2),
+        "windspeed" : round(raw["current_weather"]["windspeed"],2),
         "city" : geo.city if geo else None
         }
+
+    return GetWeatherResponse.model_validate(data)
     
 
 
