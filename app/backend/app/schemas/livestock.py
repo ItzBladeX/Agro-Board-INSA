@@ -35,3 +35,6 @@ class GetLivestockResponse(LivestockBase):
 
 class GetLivestockTypesResponse(BaseModel):
     name: str 
+    id: str
+class CreateLivestockTypeRequest(BaseModel):
+    name: str
