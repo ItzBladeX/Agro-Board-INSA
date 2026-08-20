@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator, Field
 from datetime import date
-
+from app.models import UserRole
 
 class BaseUser(BaseModel):
 
@@ -23,11 +23,11 @@ class CreateUserRequest(BaseUser):
     passwd: str
     phone_number: str
 
-    #phone number validation
+    # phone number validation
     @field_validator("phone_number")
     @classmethod
     def validate_phone_number(cls, value: str):
-        pass
+      
         if not value.isdigit():
             raise ValueError("Phone number must contain only digits")
         if len(value) != 10:
@@ -45,6 +45,22 @@ class GetUserResponse(BaseModel):
     username: str
     phone_number: str
 
+
 class UserLogin(BaseModel):
     phone_number: str
     passwd: str
+
+#admin-part
+class AdminUserView(BaseModel):
+    id: int
+    username: str
+    first_name: str
+    middle_name: str
+    last_name: str
+    phone_number: str
+    role: UserRole
+    is_active: bool
+
+
+class UserRoleUpdate(BaseModel):
+    role: UserRole
