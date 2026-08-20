@@ -1,5 +1,10 @@
 from sqlmodel import SQLModel, Field
 from datetime import date
+from enum import Enum
+
+class UserRole(str, Enum):
+    user = "user"
+    admin = "admin"
 
 class User(SQLModel, table=True):
     __table_args__ = {'extend_existing': True}
@@ -16,3 +21,5 @@ class User(SQLModel, table=True):
     user_id: str | None = Field(default = None)
     land_area: float | None = Field(default = None)
     passwd: str
+    role:str =Field(default=UserRole.user)
+    is_active:bool =Field(default=True)

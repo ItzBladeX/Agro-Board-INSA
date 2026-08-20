@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
-from app.schema.user import CreateUserRequest ,UserLogin, GetUserResponse
+from app.schemas.user import CreateUserRequest ,UserLogin, GetUserResponse
 from app.services import register_user, authenticate_user
 from app.core.security import create_access_token
 from app.core.dependencies import get_current_user
@@ -46,15 +46,19 @@ def login(
             detail="Invalid phone_number or password"
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been blocked"
+        )
+
     token = create_access_token({
         "sub": str(user.id)
     })
 
     return {
-        "success":True,
+        "success": True,
         "message": "logged in successfully",
         "access_token": token,
         "token_type": "bearer"
     }
-
-
