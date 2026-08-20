@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
-from app.schema.user import CreateUserRequest ,UserLogin, GetUserResponse
-from app.services import register_user, authenticate_user
+from app.schemas import CreateUserRequest ,UserLogin, GetUserResponse
+from app.services import register_user, authenticate_user, get_user
 from app.core.security import create_access_token
 from app.core.dependencies import get_current_user
 from app.models.user import User
@@ -15,14 +15,12 @@ router = APIRouter(
 
 
 @router.post("/register")
-def register(
-    data: CreateUserRequest,
-    session: Session = Depends(get_session)
-):
+def register(data: CreateUserRequest, session: Session = Depends(get_session)):
     try:
          register_user(session, data)
          return {
              "success":True,
+              "phone_number": data.phone_number,
              "message":"user registered successfully"
          }
 
