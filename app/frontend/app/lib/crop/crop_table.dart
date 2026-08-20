@@ -10,6 +10,7 @@ class CropTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
+      //responsiveness for different screen sizes
       builder: (context, constraints) {
         if (constraints.maxWidth < 600) {
           return Column(
