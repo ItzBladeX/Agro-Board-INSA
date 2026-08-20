@@ -18,21 +18,25 @@ def create_crop(s:Session, crop:CreateCropRequest):
 
 
 def get_crop(s: Session,user_id):
+    print("Function Called")
 
     try:
         with s as session:
             statement = select(Crop).where(Crop.user_id == user_id)
             crops = session.exec(statement).all()
+            print("Queried")
 
             if not crops:
                 {"status": False, "error_code": "No Crops Found", "data": None}
-
-        crops = [GetCropResponse.model_validate(crop) for crop in crops]
+        print("Found")
+        crops = [GetCropResponse.model_validate(crop.model_dump()) for crop in crops]
         sorted_crops = sorted(crops, key=lambda crop : (crop.prod_start_year, crop.prod_end_year), reverse=True)
+        print("Ordered")
         
         return {"status": True, "error_code": None, "data":  sorted_crops}
 
     except Exception as e:
+            print(e)
             return {"status": False, "error_code": e, "data": None}
 
 

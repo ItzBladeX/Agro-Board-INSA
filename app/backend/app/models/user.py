@@ -22,5 +22,5 @@ class User(SQLModel, table=True):
     user_id: str | None = Field(default = None)
     land_area: float | None = Field(default = None)
     passwd: str
-    role:str =Field(default=UserRole.user)
-    is_active:bool =Field(default=True)
+    role:str = Field(default=UserRole.user)
+    is_active:bool = Field(default=True)

@@ -3,7 +3,7 @@ from sqlmodel import Session
 from app.database import get_session
 from app.core.dependencies import get_current_admin
 from app.models.user import User
-from app.schemas.user import AdminUserView, UserRoleUpdate
+from app.schemas import AdminUserView, UserRoleUpdate
 from app.services import admin_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])

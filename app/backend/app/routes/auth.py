@@ -6,7 +6,7 @@ from app.schemas import CreateUserRequest ,UserLogin, GetUserResponse
 from app.services import register_user, authenticate_user, get_user
 from app.core.security import create_access_token
 from app.core.dependencies import get_current_user
-from app.models.user import User
+from app.models import User
 from app.database import get_session
 
 
