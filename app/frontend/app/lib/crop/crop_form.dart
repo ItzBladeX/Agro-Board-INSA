@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CropForm extends StatefulWidget {
-  const CropForm({super.key});
+  final Map<String, dynamic>? crop; // null = Create, not null = Edit
+
+  const CropForm({super.key, this.crop});
 
   @override
   State<CropForm> createState() => _CropFormState();
@@ -19,20 +21,7 @@ class _CropFormState extends State<CropForm> {
   bool isLoading = true;
   String? errorMessage;
 
-  final Map<String, dynamic> cropData = {
-    "name": null,
-    "prod_start_year": null,
-    "prod_end_year": null,
-    "planted_date": null,
-    "harvest_date": null,
-    "crop_yield": null,
-    "prod_cost": null,
-    "revenue": null,
-    "profit": null,
-    "notes": null,
-    "user_id": 1,
-    "crop_type_id": 1,
-  };
+  late Map<String, dynamic> cropData;
 
   // ===== MongoDB LeafyGreen palette =====
   static const Color mongoGreen = Color(0xFF00ED64);
@@ -41,9 +30,36 @@ class _CropFormState extends State<CropForm> {
   static const Color lightBg = Color(0xFFF9FBFA);
   static const Color softGray = Color(0xFFE8EDEB);
 
+  bool get isEditMode => widget.crop != null;
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize with existing data if editing
+    cropData = {
+      "name": widget.crop?['name'],
+      "prod_start_year": widget.crop?['prod_start_year']?.toString(),
+      "prod_end_year": widget.crop?['prod_end_year']?.toString(),
+      "planted_date": widget.crop?['planted_date'],
+      "harvest_date": widget.crop?['harvest_date'],
+      "crop_yield": widget.crop?['crop_yield']?.toString(),
+      "prod_cost": widget.crop?['prod_cost']?.toString(),
+      "revenue": widget.crop?['revenue']?.toString(),
+      "profit": widget.crop?['profit']?.toString(),
+      "notes": widget.crop?['notes'],
+      "user_id": widget.crop?['user_id'] ?? 1,
+      "crop_type_id": widget.crop?['crop_type_id'] ?? 1,
+    };
+
+    // Parse dates if they exist
+    if (widget.crop?['planted_date'] != null) {
+      plantedDate = DateTime.tryParse(widget.crop!['planted_date'].toString());
+    }
+    if (widget.crop?['harvest_date'] != null) {
+      harvestDate = DateTime.tryParse(widget.crop!['harvest_date'].toString());
+    }
+
     _loadCropTypes();
   }
 
@@ -75,32 +91,30 @@ class _CropFormState extends State<CropForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Loading
     if (isLoading) {
       return Scaffold(
         backgroundColor: lightBg,
         appBar: AppBar(
           backgroundColor: mongoDark,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Crop Form',
-            style: TextStyle(fontWeight: FontWeight.w600),
+          title: Text(
+            isEditMode ? 'Edit Crop' : 'Crop Form',
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
         body: const Center(child: CircularProgressIndicator(color: mongoGreen)),
       );
     }
 
-    // Error
     if (errorMessage != null) {
       return Scaffold(
         backgroundColor: lightBg,
         appBar: AppBar(
           backgroundColor: mongoDark,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Crop Form',
-            style: TextStyle(fontWeight: FontWeight.w600),
+          title: Text(
+            isEditMode ? 'Edit Crop' : 'Crop Form',
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
         body: Center(
@@ -112,16 +126,15 @@ class _CropFormState extends State<CropForm> {
       );
     }
 
-    // Main form
     return Scaffold(
       backgroundColor: lightBg,
       appBar: AppBar(
         backgroundColor: mongoDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Crop Form',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+        title: Text(
+          isEditMode ? 'Edit Crop' : 'Crop Form',
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
         ),
       ),
       body: Form(
@@ -156,6 +169,7 @@ class _CropFormState extends State<CropForm> {
 
             // Production Start Year
             TextFormField(
+              initialValue: cropData['prod_start_year'],
               decoration: _inputDecoration('Production Start Year'),
               style: const TextStyle(color: mongoDark),
               keyboardType: TextInputType.number,
@@ -175,6 +189,7 @@ class _CropFormState extends State<CropForm> {
 
             // Production End Year
             TextFormField(
+              initialValue: cropData['prod_end_year'],
               decoration: _inputDecoration('Production End Year'),
               style: const TextStyle(color: mongoDark),
               keyboardType: TextInputType.number,
@@ -192,7 +207,7 @@ class _CropFormState extends State<CropForm> {
 
             const SizedBox(height: 8),
 
-            // Planted Date
+            // Dates
             Row(
               children: [
                 Expanded(
@@ -209,7 +224,7 @@ class _CropFormState extends State<CropForm> {
                         context: context,
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
-                        initialDate: DateTime.now(),
+                        initialDate: plantedDate ?? DateTime.now(),
                         builder: (context, child) {
                           return Theme(
                             data: Theme.of(context).copyWith(
@@ -234,13 +249,11 @@ class _CropFormState extends State<CropForm> {
                     child: Text(
                       plantedDate == null
                           ? 'Select Planted Date *'
-                          : 'Planted Date: ${plantedDate!.day}/${plantedDate!.month}/${plantedDate!.year}',
+                          : 'Planted: ${plantedDate!.day}/${plantedDate!.month}/${plantedDate!.year}',
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 24),
-
+                const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -255,7 +268,7 @@ class _CropFormState extends State<CropForm> {
                         context: context,
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
-                        initialDate: DateTime.now(),
+                        initialDate: harvestDate ?? DateTime.now(),
                         builder: (context, child) {
                           return Theme(
                             data: Theme.of(context).copyWith(
@@ -280,18 +293,18 @@ class _CropFormState extends State<CropForm> {
                     child: Text(
                       harvestDate == null
                           ? 'Select Harvest Date *'
-                          : 'Harvest Date: ${harvestDate!.day}/${harvestDate!.month}/${harvestDate!.year}',
+                          : 'Harvest: ${harvestDate!.day}/${harvestDate!.month}/${harvestDate!.year}',
                     ),
                   ),
                 ),
               ],
             ),
 
-            // Harvest Date
             const SizedBox(height: 24),
 
             // Crop Yield
             TextFormField(
+              initialValue: cropData["crop_yield"],
               decoration: _inputDecoration('Crop Yield in Kg'),
               style: const TextStyle(color: mongoDark),
               keyboardType: const TextInputType.numberWithOptions(
@@ -304,6 +317,7 @@ class _CropFormState extends State<CropForm> {
 
             // Production Cost
             TextFormField(
+              initialValue: cropData["prod_cost"],
               decoration: _inputDecoration('Prod Cost in ETB'),
               style: const TextStyle(color: mongoDark),
               keyboardType: const TextInputType.numberWithOptions(
@@ -316,6 +330,7 @@ class _CropFormState extends State<CropForm> {
 
             // Revenue
             TextFormField(
+              initialValue: cropData["revenue"],
               decoration: _inputDecoration('Revenue in ETB'),
               style: const TextStyle(color: mongoDark),
               keyboardType: const TextInputType.numberWithOptions(
@@ -328,6 +343,7 @@ class _CropFormState extends State<CropForm> {
 
             // Profit
             TextFormField(
+              initialValue: cropData["profit"],
               decoration: _inputDecoration('Profit in ETB'),
               style: const TextStyle(color: mongoDark),
               keyboardType: const TextInputType.numberWithOptions(
@@ -340,8 +356,10 @@ class _CropFormState extends State<CropForm> {
 
             // Notes
             TextFormField(
+              initialValue: cropData["notes"],
               decoration: _inputDecoration('Notes'),
               style: const TextStyle(color: mongoDark),
+              maxLines: 3,
               onChanged: (value) => cropData["notes"] = value,
             ),
 
@@ -372,7 +390,7 @@ class _CropFormState extends State<CropForm> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                          'Incorrect fields – please select both dates',
+                          'Please fill all required fields and select both dates',
                         ),
                         backgroundColor: Colors.red,
                       ),
@@ -380,9 +398,14 @@ class _CropFormState extends State<CropForm> {
                     return;
                   }
 
-                  submitCropForm(context, cropData);
+                  submitCropForm(
+                    context,
+                    cropData,
+                    isEditMode: isEditMode,
+                    cropId: widget.crop?['id'],
+                  );
                 },
-                child: const Text('Submit'),
+                child: Text(isEditMode ? 'Update Crop' : 'Submit'),
               ),
             ),
           ],
@@ -415,59 +438,95 @@ class _CropFormState extends State<CropForm> {
 
 Future<void> submitCropForm(
   BuildContext context,
-  Map<String, dynamic> data,
-) async {
-  final url = Uri.parse('http://127.0.0.1:8000/crop/create');
+  Map<String, dynamic> data, {
+  bool isEditMode = false,
+  dynamic cropId,
+}) async {
+  final url = isEditMode
+      ? Uri.parse('http://127.0.0.1:8000/crop/update')
+      : Uri.parse('http://127.0.0.1:8000/crop/create');
+
+  // Format date as "yyyy-MM-dd"
+  String? formatDate(dynamic value) {
+    if (value == null) return null;
+
+    DateTime? date;
+    if (value is DateTime) {
+      date = value;
+    } else if (value is String) {
+      date = DateTime.tryParse(value);
+    }
+
+    if (date == null) return null;
+
+    // Return only the date part → "2026-08-21"
+    return "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+  }
 
   try {
     final body = {
-      'name': data['name'],
-      'prod_start_year': data['prod_start_year'] != null
+      "name": data['name'],
+      "prod_start_year": data['prod_start_year'] != null
           ? int.tryParse(data['prod_start_year'].toString())
           : null,
-      'prod_end_year': data['prod_end_year'] != null
+      "prod_end_year": data['prod_end_year'] != null
           ? int.tryParse(data['prod_end_year'].toString())
           : null,
-      'planted_date': (data['planted_date'] as DateTime?)?.toIso8601String(),
-      'harvest_date': (data['harvest_date'] as DateTime?)?.toIso8601String(),
-      'crop_yield': data['crop_yield'] != null
+      "planted_date": formatDate(data['planted_date']),
+      "harvest_date": formatDate(data['harvest_date']),
+      "crop_yield": data['crop_yield'] != null
           ? double.tryParse(data['crop_yield'].toString())
           : null,
-      'prod_cost': data['prod_cost'] != null
+      "prod_cost": data['prod_cost'] != null
           ? double.tryParse(data['prod_cost'].toString())
           : null,
-      'revenue': data['revenue'] != null
+      "revenue": data['revenue'] != null
           ? double.tryParse(data['revenue'].toString())
           : null,
-      'profit': data['profit'] != null
+      "profit": data['profit'] != null
           ? double.tryParse(data['profit'].toString())
           : null,
-      'notes': data['notes'],
-      'user_id': data['user_id'],
-      'crop_type_id': data['crop_type_id'],
+      "notes": data['notes'],
+      "user_id": data['user_id'],
+      "crop_type_id": data['crop_type_id'],
     };
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(body),
-    );
+    // Add id only when updating
+    if (isEditMode && cropId != null) {
+      body["id"] = cropId;
+    }
+
+    final response = isEditMode
+        ? await http.patch(
+            url,
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode(body),
+          )
+        : await http.post(
+            url,
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode(body),
+          );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Submitted successfully!'),
-            backgroundColor: Color(0xFF00ED64),
+          SnackBar(
+            content: Text(
+              isEditMode ? 'Updated successfully!' : 'Submitted successfully!',
+            ),
+            backgroundColor: const Color(0xFF00ED64),
           ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Submission failed: ${response.statusCode}'),
+            content: Text('Failed: ${response.statusCode}'),
             backgroundColor: Colors.red,
           ),
         );

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class LivestockForm extends StatefulWidget {
-  const LivestockForm({super.key});
+  final Map<String, dynamic>? livestock; // null = Create, not null = Edit
+
+  const LivestockForm({super.key, this.livestock});
 
   @override
   State<LivestockForm> createState() => _LivestockFormState();
@@ -15,35 +17,46 @@ class _LivestockFormState extends State<LivestockForm> {
   DateTime? entryDate;
   DateTime? exitDate;
 
-  Map<String, dynamic> livestockTypes = {};
+  Map<String, dynamic> livestockType = {};
   bool isLoading = true;
   String? errorMessage;
 
-  final Map<String, dynamic> livestockData = {
-    "name": null,
-    "prod_start_year": null,
-    "prod_end_year": null,
-    "entry_date": null,
-    "exit_date": null,
-    "livestock_num": null,
-    "prod_cost": null,
-    "revenue": null,
-    "profit": null,
-    "notes": null,
-    "user_id": 1,
-    "livestock_type_id": 1,
-  };
+  late Map<String, dynamic> formData;
 
-  // ===== MongoDB LeafyGreen + App Green palette =====
-  static const Color mongoGreen = Color(0xFF00ED64);     // Bright MongoDB green
-  static const Color mongoDark = Color(0xFF001E2B);      // Dark evergreen
-  static const Color mongoGreenDark = Color(0xFF00684A); // Deep green
-  static const Color lightBg = Color(0xFFF9FBFA);        // Very light background
-  static const Color softGray = Color(0xFFE8EDEB);       // Soft border gray
+  static const Color mongoGreen = Color(0xFF00ED64);
+  static const Color mongoDark = Color(0xFF001E2B);
+  static const Color mongoGreenDark = Color(0xFF00684A);
+  static const Color lightBg = Color(0xFFF9FBFA);
+  static const Color softGray = Color(0xFFE8EDEB);
+
+  bool get isEditMode => widget.livestock != null;
 
   @override
   void initState() {
     super.initState();
+
+    formData = {
+      "name": widget.livestock?['name'],
+      "prod_start_year": widget.livestock?['prod_start_year']?.toString(),
+      "prod_end_year": widget.livestock?['prod_end_year']?.toString(),
+      "entry_date": widget.livestock?['entry_date'],
+      "exit_date": widget.livestock?['exit_date'],
+      "crop_yield": widget.livestock?['crop_yield']?.toString(),
+      "prod_cost": widget.livestock?['prod_cost']?.toString(),
+      "revenue": widget.livestock?['revenue']?.toString(),
+      "profit": widget.livestock?['profit']?.toString(),
+      "notes": widget.livestock?['notes'],
+      "user_id": widget.livestock?['user_id'] ?? 1,
+      "livestock_type_id": widget.livestock?['livestock_type_id'] ?? 1,
+    };
+
+    if (widget.livestock?['entry_date'] != null) {
+      entryDate = DateTime.tryParse(widget.livestock!['entry_date'].toString());
+    }
+    if (widget.livestock?['exit_date'] != null) {
+      exitDate = DateTime.tryParse(widget.livestock!['exit_date'].toString());
+    }
+
     _loadLivestockTypes();
   }
 
@@ -56,13 +69,12 @@ class _LivestockFormState extends State<LivestockForm> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          livestockTypes = Map<String, dynamic>.from(data['data']);
+          livestockType = Map<String, dynamic>.from(data['data']);
           isLoading = false;
         });
       } else {
         setState(() {
-          errorMessage =
-              'Failed to load livestock types (${response.statusCode})';
+          errorMessage = 'Failed to load livestock types (${response.statusCode})';
           isLoading = false;
         });
       }
@@ -76,272 +88,121 @@ class _LivestockFormState extends State<LivestockForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Loading
     if (isLoading) {
       return Scaffold(
         backgroundColor: lightBg,
         appBar: AppBar(
           backgroundColor: mongoDark,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Livestock Form',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          title: Text(isEditMode ? 'Edit Livestock' : 'Livestock Form'),
         ),
-        body: const Center(
-          child: CircularProgressIndicator(color: mongoGreen),
-        ),
+        body: const Center(child: CircularProgressIndicator(color: mongoGreen)),
       );
     }
 
-    // Error
     if (errorMessage != null) {
       return Scaffold(
         backgroundColor: lightBg,
         appBar: AppBar(
           backgroundColor: mongoDark,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Livestock Form',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          title: Text(isEditMode ? 'Edit Livestock' : 'Livestock Form'),
         ),
-        body: Center(
-          child: Text(
-            errorMessage!,
-            style: const TextStyle(color: mongoDark, fontSize: 16),
-          ),
-        ),
+        body: Center(child: Text(errorMessage!)),
       );
     }
 
-    // Main form
     return Scaffold(
       backgroundColor: lightBg,
       appBar: AppBar(
         backgroundColor: mongoDark,
         foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Livestock Form',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-        ),
+        title: Text(isEditMode ? 'Edit Livestock' : 'Livestock Form'),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Livestock Name
             DropdownButtonFormField<String>(
               decoration: _inputDecoration('Livestock Name'),
               style: const TextStyle(color: mongoDark),
               dropdownColor: Colors.white,
-              value: livestockData["name"],
-              items: livestockTypes.keys.map((String name) {
-                return DropdownMenuItem<String>(
-                  value: name,
-                  child: Text(name),
-                );
-              }).toList(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a livestock type';
-                }
-                return null;
-              },
+              value: livestockType.containsKey(formData["name"])
+                  ? formData["name"] as String?
+                  : null,
+              items: livestockType.keys
+                  .map((name) => DropdownMenuItem(value: name, child: Text(name)))
+                  .toList(),
+              validator: (v) => v == null || v.isEmpty ? 'Please select a type' : null,
               onChanged: (value) {
                 setState(() {
-                  livestockData["name"] = value;
-                  livestockData["livestock_type_id"] = livestockTypes[value];
+                  formData["name"] = value;
+                  formData["livestock_type_id"] = livestockType[value];
                 });
               },
             ),
-
             const SizedBox(height: 12),
-
-            // Production Start Year
             TextFormField(
+              initialValue: formData['prod_start_year'],
               decoration: _inputDecoration('Production Start Year'),
-              style: const TextStyle(color: mongoDark),
               keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter year';
-                final year = int.tryParse(value);
-                if (year == null) return 'Please enter a valid number';
-                if (year < 1900 || year > 2200) {
-                  return 'Year must be between 1900 & 2200';
-                }
-                return null;
-              },
-              onChanged: (value) => livestockData['prod_start_year'] = value,
+              validator: _yearValidator,
+              onChanged: (v) => formData['prod_start_year'] = v,
             ),
-
             const SizedBox(height: 12),
-
-            // Production End Year
             TextFormField(
+              initialValue: formData['prod_end_year'],
               decoration: _inputDecoration('Production End Year'),
-              style: const TextStyle(color: mongoDark),
               keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter year';
-                final year = int.tryParse(value);
-                if (year == null) return 'Please enter a valid number';
-                if (year < 1900 || year > 2200) {
-                  return 'Year must be between 1900 & 2200';
-                }
-                return null;
-              },
-              onChanged: (value) => livestockData['prod_end_year'] = value,
+              validator: _yearValidator,
+              onChanged: (v) => formData['prod_end_year'] = v,
             ),
-
-            const SizedBox(height: 8),
-
-            // Entry Date
-            Row(children: [
-              Expanded(child: 
-              ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: mongoGreenDark,
-                textStyle: const TextStyle(fontWeight: FontWeight.w500),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.0))
-                
-              ),
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                  initialDate: DateTime.now(),
-                  builder: (context, child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: const ColorScheme.light(
-                          primary: mongoGreen,
-                          onPrimary: mongoDark,
-                          surface: Colors.white,
-                          onSurface: mongoDark,
-                        ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-                if (picked != null) {
-                  setState(() {
-                    entryDate = picked;
-                    livestockData["entry_date"] = picked;
-                  });
-                }
-              },
-              child: Text(
-                entryDate == null
-                    ? 'Select Entry Date *'
-                    : 'Entry Date: ${entryDate!.day}/${entryDate!.month}/${entryDate!.year}',
-              ),
+            const SizedBox(height: 12),
+            // Dates (same as crop)
+            Row(
+              children: [
+                Expanded(child: _dateButton(true)),
+                const SizedBox(width: 16),
+                Expanded(child: _dateButton(false)),
+              ],
             ),
-              ),
-            const SizedBox(width: 24),
-            Expanded(child: 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: mongoGreenDark,
-                textStyle: const TextStyle(fontWeight: FontWeight.w500),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.0)),
-              ),
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                  initialDate: DateTime.now(),
-                  builder: (context, child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: const ColorScheme.light(
-                          primary: mongoGreen,
-                          onPrimary: mongoDark,
-                          surface: Colors.white,
-                          onSurface: mongoDark,
-                        ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-                if (picked != null) {
-                  setState(() {
-                    exitDate = picked;
-                    livestockData["exit_date"] = picked;
-                  });
-                }
-              },
-              child: Text(
-                exitDate == null
-                    ? 'Select Exit Date *'
-                    : 'Exit Date: ${exitDate!.day}/${exitDate!.month}/${exitDate!.year}',
-              ),
-            ),
-            ),
-
-
-            ],),
-            
-            // Exit Date
-            
             const SizedBox(height: 24),
-
-            // Livestock Number
             TextFormField(
-              decoration: _inputDecoration('Livestock Number'),
-              style: const TextStyle(color: mongoDark),
-              keyboardType: TextInputType.number,
-              onChanged: (value) => livestockData["livestock_num"] = value,
-            ),
-
-            const SizedBox(height: 12),
-
-            // Production Cost
-            TextFormField(
-              decoration: _inputDecoration('Productoin Cost in ETB'),
-              style: const TextStyle(color: mongoDark),
+              initialValue: formData["crop_yield"],
+              decoration: _inputDecoration('Yield'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (value) => livestockData["prod_cost"] = value,
+              onChanged: (v) => formData["crop_yield"] = v,
             ),
-
             const SizedBox(height: 12),
-
-            // Revenue
             TextFormField(
-              decoration: _inputDecoration('Revenue in ETB'),
-              style: const TextStyle(color: mongoDark),
+              initialValue: formData["prod_cost"],
+              decoration: _inputDecoration('Production Cost'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (value) => livestockData["revenue"] = value,
+              onChanged: (v) => formData["prod_cost"] = v,
             ),
-
             const SizedBox(height: 12),
-
-            // Profit
             TextFormField(
-              decoration: _inputDecoration('Profit in ETB'),
-              style: const TextStyle(color: mongoDark),
+              initialValue: formData["revenue"],
+              decoration: _inputDecoration('Revenue'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (value) => livestockData["profit"] = value,
+              onChanged: (v) => formData["revenue"] = v,
             ),
-
             const SizedBox(height: 12),
-
-            // Notes
             TextFormField(
+              initialValue: formData["profit"],
+              decoration: _inputDecoration('Profit'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (v) => formData["profit"] = v,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              initialValue: formData["notes"],
               decoration: _inputDecoration('Notes'),
-              style: const TextStyle(color: mongoDark),
-              onChanged: (value) => livestockData["notes"] = value,
+              maxLines: 3,
+              onChanged: (v) => formData["notes"] = v,
             ),
-
             const SizedBox(height: 24),
-
-            // Submit Button
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -349,32 +210,27 @@ class _LivestockFormState extends State<LivestockForm> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mongoGreen,
                   foregroundColor: mongoDark,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
                 ),
                 onPressed: () {
-                  final formValid = _formKey.currentState!.validate();
-                  final datesValid = entryDate != null && exitDate != null;
-
-                  if (!formValid || !datesValid) {
+                  if (_formKey.currentState!.validate() &&
+                      entryDate != null &&
+                      exitDate != null) {
+                    submitLivestockForm(
+                      context,
+                      formData,
+                      isEditMode: isEditMode,
+                      livestockId: widget.livestock?['id'],
+                    );
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content:
-                            Text('Incorrect fields – please select both dates'),
+                        content: Text('Please fill all required fields and dates'),
                         backgroundColor: Colors.red,
                       ),
                     );
-                    return;
                   }
-                  submitLivestockForm(context, livestockData);
                 },
-                child: const Text('Submit'),
+                child: Text(isEditMode ? 'Update Livestock' : 'Submit'),
               ),
             ),
           ],
@@ -383,21 +239,54 @@ class _LivestockFormState extends State<LivestockForm> {
     );
   }
 
-  // Consistent input style
+  Widget _dateButton(bool isEntered) {
+    final date = isEntered ? entryDate : exitDate;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: mongoGreenDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+      ),
+      onPressed: () async {
+        final picked = await showDatePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+          initialDate: date ?? DateTime.now(),
+        );
+        if (picked != null) {
+          setState(() {
+            if (isEntered) {
+              entryDate = picked;
+              formData["entry_date"] = picked;
+            } else {
+              exitDate = picked;
+              formData["exit_date"] = picked;
+            }
+          });
+        }
+      },
+      child: Text(
+        date == null
+            ? (isEntered ? 'Select Start Date *' : 'Select End Date *')
+            : '${isEntered ? 'Start' : 'End'}: ${date.day}/${date.month}/${date.year}',
+      ),
+    );
+  }
+
+  String? _yearValidator(String? value) {
+    if (value == null || value.isEmpty) return 'Please enter year';
+    final year = int.tryParse(value);
+    if (year == null) return 'Invalid number';
+    if (year < 1900 || year > 2200) return 'Year must be 1900-2200';
+    return null;
+  }
+
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: mongoDark),
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: softGray),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: softGray),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: mongoGreen, width: 2),
@@ -408,72 +297,70 @@ class _LivestockFormState extends State<LivestockForm> {
 
 Future<void> submitLivestockForm(
   BuildContext context,
-  Map<String, dynamic> data,
-) async {
-  final url = Uri.parse('http://127.0.0.1:8000/livestock/create');
+  Map<String, dynamic> data, {
+  bool isEditMode = false,
+  dynamic livestockId,
+}) async {
+  final url = isEditMode
+      ? Uri.parse('http://127.0.0.1:8000/livestock/update')
+      : Uri.parse('http://127.0.0.1:8000/livestock/create');
+
+  String? formatDate(dynamic value) {
+    if (value == null) return null;
+    DateTime? date;
+    if (value is DateTime) date = value;
+    else if (value is String) date = DateTime.tryParse(value);
+    if (date == null) return null;
+    return "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+  }
 
   try {
     final body = {
-      'name': data['name'],
-      'prod_start_year': data['prod_start_year'] != null
-          ? int.tryParse(data['prod_start_year'].toString())
-          : null,
-      'prod_end_year': data['prod_end_year'] != null
-          ? int.tryParse(data['prod_end_year'].toString())
-          : null,
-      'entry_date': (data['entry_date'] as DateTime?)?.toIso8601String(),
-      'exit_date': (data['exit_date'] as DateTime?)?.toIso8601String(),
-      'livestock_num': data['livestock_num'] != null
-          ? int.tryParse(data['livestock_num'].toString())
-          : null,
-      'prod_cost': data['prod_cost'] != null
-          ? double.tryParse(data['prod_cost'].toString())
-          : null,
-      'revenue': data['revenue'] != null
-          ? double.tryParse(data['revenue'].toString())
-          : null,
-      'profit': data['profit'] != null
-          ? double.tryParse(data['profit'].toString())
-          : null,
-      'notes': data['notes'],
-      'user_id': data['user_id'],
-      'livestock_type_id': data['livestock_type_id'],
+      "name": data['name'],
+      "prod_start_year": int.tryParse(data['prod_start_year']?.toString() ?? ''),
+      "prod_end_year": int.tryParse(data['prod_end_year']?.toString() ?? ''),
+      "entry_date": formatDate(data['entry_date']),
+      "exit_date": formatDate(data['exit_date']),
+      "crop_yield": double.tryParse(data['crop_yield']?.toString() ?? ''),
+      "prod_cost": double.tryParse(data['prod_cost']?.toString() ?? ''),
+      "revenue": double.tryParse(data['revenue']?.toString() ?? ''),
+      "profit": double.tryParse(data['profit']?.toString() ?? ''),
+      "notes": data['notes'],
+      "user_id": data['user_id'],
+      "livestock_type_id": data['livestock_type_id'],
     };
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(body),
-    );
+    if (isEditMode && livestockId != null) {
+      body["id"] = livestockId;
+    }
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
+    final response = isEditMode
+        ? await http.patch(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))
+        : await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Submitted successfully!'),
-            backgroundColor: Color(0xFF00ED64),
+          SnackBar(
+            content: Text(isEditMode ? 'Updated successfully!' : 'Created successfully!'),
+            backgroundColor: const Color(0xFF00ED64),
           ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Submission failed: ${response.statusCode}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Failed: ${response.statusCode}'), backgroundColor: Colors.red),
         );
       }
-      print(response.body);
     }
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Network error: $e'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Network error: $e'), backgroundColor: Colors.red),
       );
     }
   }
