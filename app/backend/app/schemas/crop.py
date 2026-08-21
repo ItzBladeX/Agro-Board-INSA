@@ -32,3 +32,12 @@ class UpdateCropRequest(CropBase):
 
 class GetCropResponse(CropBase):
     id: int
+    user_id: int
+    crop_type_id: int
+
+class GetCropTypesResponse(BaseModel):
+    id: int
+    name: str
+
+class CreateCropTypeRequest(BaseModel):
+    name:str 
