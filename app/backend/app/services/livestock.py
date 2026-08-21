@@ -80,10 +80,10 @@ def get_livestock_types(s:Session):
     try:
         with s as session:
             livestock_types = session.exec(select(LivestockType)).all()
-        if not data:
+        if not livestock_types:
             return {"status": False, "error_code": "No Livestock Types", "data": None}
         
-        data = [GetLivestockTypesResponse.model_validate(livestock_type) for livestock_type in livestock_types]
+        data = {livestock_type.name: livestock_type.id for livestock_type in livestock_types}
         return {"status": True, "error_code": None, "data": data}
     except Exception as e:
          return {"status": False, "error_code": e, "data": None}
