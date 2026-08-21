@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 
 class GetWeatherResponse(BaseModel):
-    temperature: float
-    rainfall: float
-    windspeed: float
-    city: str
+    temperature: float | None = None
+    rainfall: float | None = None
+    windspeed: float | None = None
+    humidity: float | None = None
+    city: str | None = None
     

@@ -12,11 +12,15 @@ def get_weather():
     return {"status": True, "error_code": None, "data": perse_weather(raw)}
 
 def fetch_weather():
+    print("Before")
     try:
         lat, lon = geocoder.ip('me').latlng
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=precipitation"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m"
+
+        
         print("Your approximate location (latitude, longitude):", lat, lon)
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=10)
+        print("After")
         data = response.json()
         return data
     
@@ -27,12 +31,13 @@ def fetch_weather():
 def perse_weather(raw):
     geo = geocoder.ip('me')
     data = {
-        "temperature" : round(raw["current_weather"]["temperature"],2),
-        "rainfall" : round(sum(raw["hourly"]["precipitation"][:12]),2),
-        "windspeed" : round(raw["current_weather"]["windspeed"],2),
-        "city" : geo.city if geo else None
+        "temperature" : round(raw["current"]["temperature_2m"],2),
+        "rainfall" : round(raw["current"]['precipitation'],2),
+        "windspeed" : round(raw["current"]["wind_speed_10m"],2),
+        "city" : geo.city if geo else None,
+        "humidity": round(raw['current']['relative_humidity_2m'],2)
         }
-
+    
     return GetWeatherResponse.model_validate(data)
     
 
