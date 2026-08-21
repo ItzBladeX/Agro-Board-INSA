@@ -4,6 +4,7 @@ from .crop import router as crop_router
 from .livestock import router as livestock_route
 from .weather import router as weather_route
 from .admin import router as admin_route
+from .overview import router as overview_route
 
 
 def include_routers(app: FastAPI):
@@ -13,4 +14,5 @@ def include_routers(app: FastAPI):
     app.include_router(crop_router)
     app.include_router(livestock_route)
     app.include_router(weather_route)
+    app.include_router(overview_route)
 
