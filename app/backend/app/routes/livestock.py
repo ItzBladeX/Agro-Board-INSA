@@ -52,7 +52,7 @@ def _Update_livestock(new_livestock: UpdateLivestockRequest,  session : Session 
         return {"success": True, "message":"Livestock Updated successfully"}
     return {"success": False,"message":"Failed to Update Livestock", "error": res['error_code']}
 
-@router.delete("/delete/{user_id}/{crop_id}")
+@router.delete("/delete/{user_id}/{livestock_id}")
 def _Del_livestock(user_id: int, livestock_id: int,  session : Session = Depends(get_session)):
     res = del_livestock(session, user_id, livestock_id)
 
