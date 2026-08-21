@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-
 class OverviewSection extends StatefulWidget {
   const OverviewSection({super.key});
 
@@ -14,7 +13,6 @@ class OverviewSection extends StatefulWidget {
 class OverviewSectionState extends State<OverviewSection> {
   static const int userId = 1;
   Future<void> refresh() => _loadOverview();
- 
 
   Map<String, dynamic> overviewData = {
     "crop_total_revenue": "-",
@@ -79,9 +77,7 @@ class OverviewSectionState extends State<OverviewSection> {
         if (isLoading)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(
-              child: CircularProgressIndicator(color: leafGreen),
-            ),
+            child: Center(child: CircularProgressIndicator(color: leafGreen)),
           )
         else
           _OverviewContent(data: overviewData),
@@ -156,10 +152,7 @@ Future<Map<String, dynamic>> fetchOverview(int userId) async {
     print(message);
   }
 
-  return {
-    "data": overviewData,
-    "message": message,
-  };
+  return {"data": overviewData, "message": message};
 }
 
 class _OverviewContent extends StatelessWidget {
@@ -188,11 +181,11 @@ class _OverviewContent extends StatelessWidget {
         // Totals
         Row(
           children: [
-            
             Expanded(
               child: _StatCard(
                 title: "Total Revenue",
-                value: "${NumberFormat.compact().format(data['total_revenue'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -200,7 +193,8 @@ class _OverviewContent extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 title: "Total Profit",
-                value: "${NumberFormat.compact().format(data['total_profit'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -224,7 +218,8 @@ class _OverviewContent extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 title: "Revenue",
-                value: "${NumberFormat.compact().format(data['crop_total_revenue'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['crop_total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -232,7 +227,8 @@ class _OverviewContent extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 title: "Profit",
-                value: "${NumberFormat.compact().format(data['crop_total_profit'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['crop_total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -241,7 +237,7 @@ class _OverviewContent extends StatelessWidget {
         const SizedBox(height: 8),
         _StatCard(
           title: "Total Crops",
-          value: "${NumberFormat.compact().format(data['total_crops'])}",
+          value: NumberFormat.compact().format(data['total_crops']),
           icon: Icons.grass,
         ),
         const SizedBox(height: 20),
@@ -262,7 +258,8 @@ class _OverviewContent extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 title: "Revenue",
-                value: "${NumberFormat.compact().format(data['livestock_total_revenue'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['livestock_total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -270,7 +267,8 @@ class _OverviewContent extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 title: "Profit",
-                value: "${NumberFormat.compact().format(data['livestock_total_profit'])} ETB",
+                value:
+                    "${NumberFormat.compact().format(data['livestock_total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -279,7 +277,7 @@ class _OverviewContent extends StatelessWidget {
         const SizedBox(height: 8),
         _StatCard(
           title: "Total Livestock",
-          value: "${NumberFormat.compact().format(data['total_livestock'])}",
+          value: NumberFormat.compact().format(data['total_livestock']),
           icon: Icons.pets,
         ),
       ],
@@ -328,10 +326,7 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
           ],

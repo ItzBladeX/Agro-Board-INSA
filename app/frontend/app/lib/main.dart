@@ -58,18 +58,12 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text(
             "AgroBoard",
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
           ),
           backgroundColor: leafGreen,
           centerTitle: true,
         ),
-        body: IndexedStack(
-          index: _currentIndex,
-          children: pageList,
-        ),
+        body: IndexedStack(index: _currentIndex, children: pageList),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -82,22 +76,10 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.white,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grass),
-              label: 'Crop',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.pets),
-              label: 'LiveStock',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.grass), label: 'Crop'),
+            BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'LiveStock'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
       ),
