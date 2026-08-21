@@ -8,17 +8,18 @@ class CropPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Crop Page')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
+      
+      floatingActionButton:  FloatingActionButton(
+        backgroundColor: Colors.green,
+        onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const CropForm()),
             );
           },
-          child: const Text('Go to Crop Form'),
+          child: const Icon(Icons.add),
+          
         ),
-      ),
     );
   }
 }

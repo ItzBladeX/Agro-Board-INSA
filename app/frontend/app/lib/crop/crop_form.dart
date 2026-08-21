@@ -175,7 +175,6 @@ class _CropFormState extends State<CropForm> {
                 );
                 cropData['Profit in ETB'] = double.parse(profitController.text);
                 cropData['Notes'] = notesController.text;
-                print(cropData);
               },
             ),
           ],
