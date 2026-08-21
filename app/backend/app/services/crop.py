@@ -87,10 +87,11 @@ def get_crop_types(s:Session):
     try:
         with s as session:
             crop_types = session.exec(select(CropType)).all()
-        if not data:
+        if not crop_types:
             return {"status": False, "error_code": "No Crop Types", "data": None}
 
-        data = [GetCropTypesResponse.model_validate(crop_type) for crop_type in crop_types]
+        # data = [GetCropTypesResponse.model_validate(crop_type) for crop_type in crop_types]
+        data = {crop_type.name: crop_type.id for crop_type in crop_types}
 
         return {"status": True, "error_code": None, "data": data}
     except Exception as e:

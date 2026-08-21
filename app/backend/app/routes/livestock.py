@@ -23,8 +23,8 @@ def _Get_livestock_types(session:Session = Depends(get_session)):
     res = get_livestock_types(session)
 
     if res['status']:
-        return {"success": True, "message": "Crop Types Fetched Successfully", "data": res['data']}
-    return {'success': False, "message": "Failed to Fetch Crop Types", "error": res['error_code']}
+        return {"success": True, "message": "Livestock Types Fetched Successfully", "data": res['data']}
+    return {'success': False, "message": "Failed to Fetch Livestock Types", "error": res['error_code']}
 
 @router.post("/create")
 def _Create_livestock(new_livestock:CreateLivestockRequest, session : Session = Depends(get_session)):
