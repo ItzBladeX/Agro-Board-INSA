@@ -59,7 +59,7 @@ class AuthProvider extends ChangeNotifier {
     _isAuthenticated = false;
     notifyListeners();
   }
-
+// future use
   Future<void> checkAuthStatus() async {
     _isAuthenticated = await _authService.isLoggedIn();
     notifyListeners();

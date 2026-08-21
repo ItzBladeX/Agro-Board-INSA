@@ -17,10 +17,17 @@ class ApiClient {
 
   Future<http.Response> get(String path, {bool auth = true}) async {
     final headers = await _headers(auth: auth);
-    return http.get(Uri.parse("${ApiConstants.baseUrl}$path"), headers: headers);
+    return http.get(
+      Uri.parse("${ApiConstants.baseUrl}$path"),
+      headers: headers,
+    );
   }
 
-  Future<http.Response> post(String path, Map<String, dynamic> body, {bool auth = true}) async {
+  Future<http.Response> post(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) async {
     final headers = await _headers(auth: auth);
     return http.post(
       Uri.parse("${ApiConstants.baseUrl}$path"),
@@ -29,7 +36,11 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> put(String path, Map<String, dynamic> body, {bool auth = true}) async {
+  Future<http.Response> put(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) async {
     final headers = await _headers(auth: auth);
     return http.put(
       Uri.parse("${ApiConstants.baseUrl}$path"),
@@ -38,7 +49,11 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> patch(String path, {Map<String, dynamic>? body, bool auth = true}) async {
+  Future<http.Response> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    bool auth = true,
+  }) async {
     final headers = await _headers(auth: auth);
     return http.patch(
       Uri.parse("${ApiConstants.baseUrl}$path"),
@@ -49,6 +64,9 @@ class ApiClient {
 
   Future<http.Response> delete(String path, {bool auth = true}) async {
     final headers = await _headers(auth: auth);
-    return http.delete(Uri.parse("${ApiConstants.baseUrl}$path"), headers: headers);
+    return http.delete(
+      Uri.parse("${ApiConstants.baseUrl}$path"),
+      headers: headers,
+    );
   }
 }

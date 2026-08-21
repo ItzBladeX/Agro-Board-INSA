@@ -6,6 +6,15 @@ import '../../widgets/status_badge.dart';
 import '../../widgets/role_badge.dart';
 import 'user_detail_screen.dart';
 
+// MongoDB LeafyGreen palette
+const Color _mongoGreen = Color(0xFF00ED64);       // Primary leaf green
+const Color _mongoGreenDark = Color(0xFF00684A);   // Forest / dark green
+const Color _mongoGreenSoft = Color(0xFFE3FCF7);   // Soft green surface
+const Color _mongoDark = Color(0xFF001E2B);        // Deep slate / text
+const Color _mongoGrayLight = Color(0xFFF9FBFA);   // Light background
+const Color _mongoGray = Color(0xFFE8EDEB);        // Subtle surface
+const Color _mongoMuted = Color(0xFF5C6C75);       // Muted text
+
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -58,13 +67,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final filteredUsers = _applyFilters(allUsers);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Dashboard")),
+      backgroundColor: _mongoGrayLight,
+      appBar: AppBar(
+        title: const Text(
+          "Admin Dashboard",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
+            color: _mongoDark,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: _mongoDark,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: RefreshIndicator(
+        color: _mongoGreenDark,
         onRefresh: () => adminProvider.fetchUsers(),
         child: adminProvider.isLoading && allUsers.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: _mongoGreenDark))
             : adminProvider.errorMessage != null && allUsers.isEmpty
-                ? Center(child: Text(adminProvider.errorMessage!))
+                ? Center(
+                    child: Text(
+                      adminProvider.errorMessage!,
+                      style: const TextStyle(color: _mongoMuted),
+                    ),
+                  )
                 : ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
@@ -78,7 +107,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       if (filteredUsers.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(child: Text("No users found")),
+                          child: Center(
+                            child: Text(
+                              "No users found",
+                              style: TextStyle(
+                                color: _mongoMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -95,10 +132,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       crossAxisSpacing: 12,
       childAspectRatio: 1.6,
       children: [
-        _summaryCard("Total Users", total.toString(), Colors.grey.shade100, Colors.black87),
-        _summaryCard("Active Users", active.toString(), Colors.green.shade50, Colors.green.shade800),
-        _summaryCard("Blocked", blocked.toString(), Colors.red.shade50, Colors.red.shade800),
-        _summaryCard("Total Admins", admins.toString(), Colors.green.shade800, Colors.white, dark: true),
+        _summaryCard("Total Users", total.toString(), _mongoGray, _mongoDark),
+        _summaryCard("Active Users", active.toString(), _mongoGreenSoft, _mongoGreenDark),
+        _summaryCard("Blocked", blocked.toString(), const Color(0xFFFCE8E8), const Color(0xFFCF000F)),
+        _summaryCard("Total Admins", admins.toString(), _mongoGreenDark, Colors.white, dark: true),
       ],
     );
   }
@@ -116,12 +153,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         children: [
           Text(
             label.toUpperCase(),
-            style: TextStyle(fontSize: 11, color: dark ? Colors.white70 : Colors.grey.shade600),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
+              color: dark ? Colors.white70 : _mongoMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+              color: textColor,
+            ),
           ),
         ],
       ),
@@ -130,12 +177,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildSearchBar() {
     return TextField(
+      style: const TextStyle(color: _mongoDark, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         hintText: "Search by username or phone",
-        prefixIcon: const Icon(Icons.search),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        hintStyle: const TextStyle(color: _mongoMuted),
+        prefixIcon: const Icon(Icons.search, color: _mongoMuted),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _mongoGreen, width: 1.5),
+        ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: Colors.white,
       ),
       onChanged: (value) => setState(() => _searchQuery = value),
     );
@@ -157,10 +217,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
-              label: Text(entry.value),
+              label: Text(
+                entry.value,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: selected ? _mongoDark : _mongoMuted,
+                ),
+              ),
               selected: selected,
               onSelected: (_) => setState(() => _filter = entry.key),
-              selectedColor: Colors.green.shade100,
+              selectedColor: _mongoGreenSoft,
+              backgroundColor: Colors.white,
+              side: BorderSide(
+                color: selected ? _mongoGreen : _mongoGray,
+              ),
+              checkmarkColor: _mongoGreenDark,
             ),
           );
         }).toList(),
@@ -171,15 +242,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildUserTile(UserModel user) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: _mongoGray),
+      ),
       child: ListTile(
         leading: CircleAvatar(
-          child: Text(user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : "?"),
+          backgroundColor: _mongoGreenSoft,
+          child: Text(
+            user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : "?",
+            style: const TextStyle(
+              color: _mongoGreenDark,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-        title: Text("${user.firstName} ${user.lastName}"),
+        title: Text(
+          "${user.firstName} ${user.lastName}",
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: _mongoDark,
+            letterSpacing: -0.2,
+          ),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(user.phoneNumber),
+            Text(
+              user.phoneNumber,
+              style: const TextStyle(color: _mongoMuted),
+            ),
             const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.min,
