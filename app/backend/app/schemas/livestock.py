@@ -32,3 +32,11 @@ class UpdateLivestockRequest(LivestockBase):
 
 class GetLivestockResponse(LivestockBase):
     id : int
+    user_id : int
+    livestock_type_id: int
+
+class GetLivestockTypesResponse(BaseModel):
+    id: str
+    name: str 
+class CreateLivestockTypeRequest(BaseModel):
+    name: str
