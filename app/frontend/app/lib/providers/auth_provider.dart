@@ -12,6 +12,26 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _isAuthenticated;
 
+  Future<bool> register(Map<String, dynamic> userData) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await _authService.register(userData);
+
+    _isLoading = false;
+
+    if (result["success"]) {
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } else {
+      _errorMessage = result["message"];
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> login(String phoneNumber, String password) async {
     _isLoading = true;
     _errorMessage = null;

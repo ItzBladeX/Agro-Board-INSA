@@ -44,7 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) return "Phone number is required";
-    if (!RegExp(r'^\d{10}$').hasMatch(value)) return "Enter a valid 10-digit number";
+    if (!RegExp(r'^\d{10}$').hasMatch(value))
+      return "Enter a valid 10-digit number";
     if (!value.startsWith("09") && !value.startsWith("07")) {
       return "Must start with 09 or 07";
     }
@@ -102,8 +103,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: "Password",
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: _validatePassword,
@@ -122,6 +128,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text("Login"),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  child: const Text("Don't have an account? Register"),
                 ),
               ],
             ),

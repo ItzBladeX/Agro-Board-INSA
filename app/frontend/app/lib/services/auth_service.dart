@@ -33,4 +33,20 @@ class AuthService {
     final token = await SecureStorage.getToken();
     return token != null;
   }
+
+  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
+  final response = await _apiClient.post(
+    "/auth/register",
+    userData,
+    auth: false, // no token exists yet before registration
+  );
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+    return {"success": true, "message": data["message"]};
+  } else {
+    return {"success": false, "message": data["detail"] ?? "Registration failed"};
+  }
+}
 }

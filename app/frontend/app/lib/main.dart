@@ -14,6 +14,8 @@ import './screens/profile/profile_screen.dart';
 import 'crop/crop.dart';
 import 'livestock/livestock.dart';
 import 'home/home.dart';
+import 'screens/home/main_navigation_screen.dart';
+import 'screens/auth/register_screen.dart';
 
 void main() {
   runApp(
@@ -37,17 +39,15 @@ class MyApp extends StatelessWidget {
       title: 'Agro-Board',
       debugShowCheckedModeBanner: false,
 
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
 
       // Start with login
       initialRoute: '/login',
 
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const MainNavigation(),
+        '/home': (context) => const MainNavigationScreen(),
+        '/register': (context) => const RegisterScreen(),
       },
     );
   }
@@ -73,10 +73,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pageList,
-      ),
+      body: IndexedStack(index: _currentIndex, children: pageList),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -90,25 +87,13 @@ class _MainNavigationState extends State<MainNavigation> {
         type: BottomNavigationBarType.fixed,
 
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grass),
-            label: 'Crop',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.grass), label: 'Crop'),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pets),
-            label: 'Livestock',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Livestock'),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
