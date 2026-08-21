@@ -18,7 +18,7 @@ class ApiClient {
   Future<http.Response> get(String path, {bool auth = true}) async {
     final headers = await _headers(auth: auth);
     return http.get(
-      Uri.parse("${ApiConstants.baseUrl}$path"),
+      Uri.parse("${ApiEndpoints.baseUrl}$path"),
       headers: headers,
     );
   }
@@ -30,7 +30,7 @@ class ApiClient {
   }) async {
     final headers = await _headers(auth: auth);
     return http.post(
-      Uri.parse("${ApiConstants.baseUrl}$path"),
+      Uri.parse("${ApiEndpoints.baseUrl}$path"),
       headers: headers,
       body: jsonEncode(body),
     );
@@ -43,7 +43,7 @@ class ApiClient {
   }) async {
     final headers = await _headers(auth: auth);
     return http.put(
-      Uri.parse("${ApiConstants.baseUrl}$path"),
+      Uri.parse("${ApiEndpoints.baseUrl}$path"),
       headers: headers,
       body: jsonEncode(body),
     );
@@ -56,7 +56,7 @@ class ApiClient {
   }) async {
     final headers = await _headers(auth: auth);
     return http.patch(
-      Uri.parse("${ApiConstants.baseUrl}$path"),
+      Uri.parse("${ApiEndpoints.baseUrl}$path"),
       headers: headers,
       body: body != null ? jsonEncode(body) : null,
     );
@@ -65,7 +65,7 @@ class ApiClient {
   Future<http.Response> delete(String path, {bool auth = true}) async {
     final headers = await _headers(auth: auth);
     return http.delete(
-      Uri.parse("${ApiConstants.baseUrl}$path"),
+      Uri.parse("${ApiEndpoints.baseUrl}$path"),
       headers: headers,
     );
   }
