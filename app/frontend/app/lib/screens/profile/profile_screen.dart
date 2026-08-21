@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/profile_provider.dart';
 import '../../providers/auth_provider.dart';
+
 import 'edit_profile_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 // MongoDB LeafyGreen Design System colors
 class _LeafyGreen {
@@ -15,6 +18,7 @@ class _LeafyGreen {
   static const Color grayLight1 = Color(0xFFC1C7C6);
   static const Color grayLight2 = Color(0xFFE8EDEB);
   static const Color grayLight3 = Color(0xFFF9FBFA);
+
   static const Color greenDark3 = Color(0xFF023430);
   static const Color greenDark2 = Color(0xFF00684A);
   static const Color greenDark1 = Color(0xFF00A35C);
@@ -33,23 +37,15 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
-  void initState() {
-    super.initState();
-    // fetch profile once when this screen first loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileProvider>().fetchProfile();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
 
     return Theme(
       data: ThemeData(
-        fontFamily: 'Roboto', // Clean sans-serif close to Euclid Circular A
+        fontFamily: 'Roboto',
         primaryColor: _LeafyGreen.greenBase,
         scaffoldBackgroundColor: _LeafyGreen.grayLight3,
+
         appBarTheme: const AppBarTheme(
           backgroundColor: _LeafyGreen.black,
           foregroundColor: _LeafyGreen.white,
@@ -60,8 +56,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.w600,
             fontFamily: 'Roboto',
           ),
-          iconTheme: IconThemeData(color: _LeafyGreen.white),
+          iconTheme: IconThemeData(
+            color: _LeafyGreen.white,
+          ),
         ),
+
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: _LeafyGreen.greenDark2,
@@ -78,47 +77,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        // Only color — leave elevation, shape, margin etc. untouched
+
         cardTheme: const CardThemeData(
           color: _LeafyGreen.white,
         ),
+
         dividerTheme: const DividerThemeData(
           color: _LeafyGreen.grayLight2,
         ),
       ),
+
       child: Scaffold(
         appBar: AppBar(
           title: const Text("My Profile"),
+
           actions: [
+            // Edit profile
             IconButton(
               icon: const Icon(Icons.edit),
+
               onPressed: profileProvider.user == null
                   ? null
                   : () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const EditProfileScreen(),
+                        ),
                       );
                     },
             ),
+
+            // Logout
             IconButton(
               icon: const Icon(Icons.logout),
+
               onPressed: () async {
-                await context.read<AuthProvider>().logout();
+                await context
+                    .read<AuthProvider>()
+                    .logout();
+
                 if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/login');
+                  Navigator.pushReplacementNamed(
+                    context,
+                    '/login',
+                  );
                 }
               },
             ),
           ],
         ),
+
         body: _buildBody(profileProvider),
       ),
     );
   }
 
+  
+
   Widget _buildBody(ProfileProvider profileProvider) {
-    if (profileProvider.isLoading) {
+    // Only show the full-screen loader when we
+    // don't have profile data yet.
+    //
+    // If user already exists, keep showing the
+    // profile while a refresh is happening.
+    if (profileProvider.isLoading &&
+        profileProvider.user == null) {
       return const Center(
         child: CircularProgressIndicator(
           color: _LeafyGreen.greenDark2,
@@ -126,21 +151,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    if (profileProvider.errorMessage != null) {
+    // Error only matters if we have no existing
+    // profile to display.
+    if (profileProvider.errorMessage != null &&
+        profileProvider.user == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
+
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 profileProvider.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: _LeafyGreen.black),
+
+                style: const TextStyle(
+                  color: _LeafyGreen.black,
+                ),
               ),
+
               const SizedBox(height: 16),
+
               ElevatedButton(
-                onPressed: () => profileProvider.fetchProfile(),
+                onPressed: () {
+                  profileProvider.fetchProfile();
+                },
+
                 child: const Text("Retry"),
               ),
             ],
@@ -150,27 +187,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final user = profileProvider.user;
+
     if (user == null) {
       return const Center(
         child: Text(
           "No profile data",
-          style: TextStyle(color: _LeafyGreen.grayDark1),
+          style: TextStyle(
+            color: _LeafyGreen.grayDark1,
+          ),
         ),
       );
     }
 
     return RefreshIndicator(
       color: _LeafyGreen.greenDark2,
-      onRefresh: () => profileProvider.fetchProfile(),
+
+      onRefresh: () {
+        return profileProvider.fetchProfile();
+      },
+
       child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+
         padding: const EdgeInsets.all(16),
+
         children: [
+          // PROFILE AVATAR
+         
+
           Center(
             child: CircleAvatar(
               radius: 40,
-              backgroundColor: _LeafyGreen.greenDark2,
+
+              backgroundColor:
+                  _LeafyGreen.greenDark2,
+
               child: Text(
-                user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : "?",
+                user.firstName.isNotEmpty
+                    ? user.firstName[0].toUpperCase()
+                    : "?",
+
                 style: const TextStyle(
                   fontSize: 32,
                   color: _LeafyGreen.white,
@@ -179,10 +235,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
+          // FULL NAME
+
           Center(
             child: Text(
-              "${user.firstName} ${user.middleName} ${user.lastName}",
+              "${user.firstName} "
+              "${user.middleName} "
+              "${user.lastName}",
+
+              textAlign: TextAlign.center,
+
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -190,52 +255,190 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+
+          // USERNAME
+
           Center(
             child: Text(
               "@${user.username}",
-              style: const TextStyle(color: _LeafyGreen.grayDark1),
+
+              style: const TextStyle(
+                color: _LeafyGreen.grayDark1,
+              ),
             ),
           ),
+
           const SizedBox(height: 24),
 
-          _infoCard("Personal Details", [
-            _infoRow("First Name", user.firstName),
-            _infoRow("Middle Name", user.middleName),
-            _infoRow("Last Name", user.lastName),
-            _infoRow("Gender", user.gender ?? "-"),
-          ]),
+          // PERSONAL DETAILS
 
-          _infoCard("Contact & Demographics", [
-            _infoRow("Phone Number", user.phoneNumber),
-            _infoRow("Birth Date", user.birthDate ?? "-"),
-            _infoRow("Age", user.age?.toString() ?? "-"),
-          ]),
+          _infoCard(
+            "Personal Details",
+            [
+              _infoRow(
+                "First Name",
+                user.firstName,
+              ),
 
-          _infoCard("Agricultural Data", [
-            _infoRow("Total Land Area", "${user.landArea ?? 0} Hectares"),
-          ]),
+              _infoRow(
+                "Middle Name",
+                user.middleName,
+              ),
+
+              _infoRow(
+                "Last Name",
+                user.lastName,
+              ),
+
+              _infoRow(
+                "Gender",
+                user.gender ?? "-",
+              ),
+            ],
+          ),
+
+          // CONTACT & DEMOGRAPHICS
+
+          _infoCard(
+            "Contact & Demographics",
+            [
+              _infoRow(
+                "Phone Number",
+                user.phoneNumber,
+              ),
+
+              _infoRow(
+                "Birth Date",
+                user.birthDate ?? "-",
+              ),
+
+              _infoRow(
+                "Age",
+                user.age?.toString() ?? "-",
+              ),
+            ],
+          ),
+
+          // AGRICULTURAL DATA
+
+          _infoCard(
+            "Agricultural Data",
+            [
+              _infoRow(
+                "Total Land Area",
+                "${user.landArea ?? 0} Hectares",
+              ),
+            ],
+          ),
+
+          // ==========================================
+          // ADMIN DASHBOARD
+          // ==========================================
+
+          if (user.role == "admin")
+            _adminDashboardCard(),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _infoCard(String title, List<Widget> rows) {
+  // ================================================
+  // ADMIN DASHBOARD CARD
+  // ================================================
+
+  Widget _adminDashboardCard() {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+
+          decoration: BoxDecoration(
+            color: _LeafyGreen.greenLight3,
+            borderRadius: BorderRadius.circular(10),
+          ),
+
+          child: const Icon(
+            Icons.dashboard,
+            color: _LeafyGreen.greenDark2,
+          ),
+        ),
+
+        title: const Text(
+          "Admin Dashboard",
+
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: _LeafyGreen.black,
+          ),
+        ),
+
+        subtitle: const Text(
+          "Manage Agro-Board",
+        ),
+
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: _LeafyGreen.grayDark1,
+        ),
+
+        onTap: () {
+          Navigator.push(
+            context,
+
+            MaterialPageRoute(
+              builder: (_) =>
+                  const AdminDashboardScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ================================================
+  // INFO CARD
+  // ================================================
+
+  Widget _infoCard(
+    String title,
+    List<Widget> rows,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(
+        bottom: 16,
+      ),
+
       child: Padding(
         padding: const EdgeInsets.all(16),
+
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
           children: [
             Text(
               title,
+
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
                 color: _LeafyGreen.black,
               ),
             ),
+
             const Divider(),
+
             ...rows,
           ],
         ),
@@ -243,21 +446,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  // ================================================
+  // INFO ROW
+  // ================================================
+
+  Widget _infoRow(
+    String label,
+    String value,
+  ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
+
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
+
         children: [
           Text(
             label,
-            style: const TextStyle(color: _LeafyGreen.grayDark1),
-          ),
-          Text(
-            value,
+
             style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              color: _LeafyGreen.black,
+              color: _LeafyGreen.grayDark1,
+            ),
+          ),
+
+          Flexible(
+            child: Text(
+              value,
+
+              textAlign: TextAlign.right,
+
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                color: _LeafyGreen.black,
+              ),
             ),
           ),
         ],

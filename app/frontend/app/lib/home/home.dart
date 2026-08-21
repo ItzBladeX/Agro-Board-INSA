@@ -1,5 +1,7 @@
+import 'package:app/home/overview.dart';
+import 'package:app/home/weather.dart';
 import 'package:flutter/material.dart';
-import '../weather_service.dart';
+import 'package:app/home/welcome_message.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,41 +11,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final WeatherService weatherService = WeatherService();
-  Map<String, dynamic>? weatherData;
+  final weatherKey = GlobalKey<WeatherSectionState>();
+  final overviewKey = GlobalKey<OverviewSectionState>();
 
-  @override
-  void initState() {
-    super.initState();
-    fetchWeatherData();
-  }
-
-  Future<void> fetchWeatherData() async {
-    final data = await weatherService.getWeather();
-    setState(() {
-      weatherData = data;
-    });
+  Future<void> _refreshAll() async {
+    await Future.wait([
+      weatherKey.currentState?.refresh() ?? Future.value(),
+      overviewKey.currentState?.refresh() ?? Future.value(),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        backgroundColor: Colors.green,
-      ),
-      body: Center(
-        child: weatherData == null
-            ? const CircularProgressIndicator()
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Temperature: ${weatherData!['temperature']}°C'),
-                  Text('Humidity: ${weatherData!['humidity']}%'),
-                  Text('Precipitation: ${weatherData!['precipitation']}mm'),
-                  Text('Wind Speed: ${weatherData!['windSpeed']} m/s'),
-                ],
-              ),
+      body: RefreshIndicator(
+        onRefresh: _refreshAll,
+        color: const Color(0xFF00684A),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              WelcomeBanner(),
+              WeatherSection(key: weatherKey),
+              const SizedBox(height: 24),
+              OverviewSection(key: overviewKey),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -127,6 +127,9 @@ Future<Map<String, dynamic>> fetchWeatherData() async {
   };
 }
 
+  
+
+  
 class _WeatherContent extends StatelessWidget {
   final Map<String, dynamic> weatherData;
 
@@ -143,15 +146,15 @@ class _WeatherContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          "${weatherData['city']}",
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: darkText,
-          ),
-        ),
+        // Text(
+        //   "${weatherData['city']}",
+        //   textAlign: TextAlign.center,
+        //   style: const TextStyle(
+        //     fontSize: 24,
+        //     fontWeight: FontWeight.w700,
+        //     color: darkText,
+        //   ),
+        // ),
 
         const SizedBox(height: 16),
 

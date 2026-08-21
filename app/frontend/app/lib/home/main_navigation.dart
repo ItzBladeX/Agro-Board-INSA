@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 
-import './home.dart';
+import 'home.dart';
+import '../screens/crop/crop.dart';
+import '../screens/livestock/livestock.dart';
 import '../screens/profile/profile_screen.dart';
-import '../screens/admin/admin_dashboard_screen.dart';
-
-// import '../crop/crop_screen.dart';
-// import '../livestock/livestock_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -20,7 +18,6 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState
     extends State<MainNavigationScreen> {
-
   int _currentIndex = 0;
 
   @override
@@ -36,9 +33,7 @@ class _MainNavigationScreenState
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
 
-    // -------------------------
     // Loading
-    // -------------------------
     if (profileProvider.isLoading &&
         profileProvider.user == null) {
       return const Scaffold(
@@ -48,9 +43,7 @@ class _MainNavigationScreenState
       );
     }
 
-    // -------------------------
     // Error
-    // -------------------------
     if (profileProvider.errorMessage != null &&
         profileProvider.user == null) {
       return Scaffold(
@@ -74,101 +67,22 @@ class _MainNavigationScreenState
       );
     }
 
-    // -------------------------
-    // Check admin
-    // -------------------------
-    final isAdmin = profileProvider.user?.role == "admin";
-
-    // -------------------------
-    // Screens
-    // -------------------------
-    final List<Widget> screens;
-
-    if (isAdmin) {
-      screens = const [
-        HomePage(),
-        // CropScreen(),
-        // LivestockScreen(),
-        AdminDashboardScreen(),
-        ProfileScreen(),
-      ];
-    } else {
-      screens = const [
-        HomePage(),
-        // CropScreen(),
-        // LivestockScreen(),
-        ProfileScreen(),
-      ];
-    }
-
-    // -------------------------
-    // Navigation items
-    // -------------------------
-    final List<BottomNavigationBarItem> navItems;
-
-    if (isAdmin) {
-      navItems = const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grass),
-          label: "Crop",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.pets),
-          label: "LiveStock",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: "Dashboard",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Profile",
-        ),
-      ];
-    } else {
-      navItems = const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grass),
-          label: "Crop",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.pets),
-          label: "LiveStock",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Profile",
-        ),
-      ];
-    }
-
-    // Safety check
-    final safeIndex =
-        _currentIndex < screens.length ? _currentIndex : 0;
+    // Only 4 screens now
+    final pages = const [
+      HomePage(),
+      CropScreen(),
+      LivestockScreen(),
+      ProfileScreen(),
+    ];
 
     return Scaffold(
-      body: screens[safeIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pages,
+      ),
 
-      // -------------------------
-      // Bottom navigation
-      // -------------------------
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: safeIndex,
+        currentIndex: _currentIndex,
 
         onTap: (index) {
           setState(() {
@@ -178,21 +92,31 @@ class _MainNavigationScreenState
 
         type: BottomNavigationBarType.fixed,
 
-        backgroundColor: Colors.white,
-
         selectedItemColor: const Color(0xFF008060),
 
         unselectedItemColor: Colors.grey,
 
-        selectedFontSize: 16,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+          ),
 
-        unselectedFontSize: 14,
+          BottomNavigationBarItem(
+            icon: Icon(Icons.grass),
+            label: "Crop",
+          ),
 
-        showUnselectedLabels: true,
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pets),
+            label: "Livestock",
+          ),
 
-        elevation: 0,
-
-        items: navItems,
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profile",
+          ),
+        ],
       ),
     );
   }

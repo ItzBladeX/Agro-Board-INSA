@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:app/utils/secure_storage.dart';
 
 class OverviewSection extends StatefulWidget {
   const OverviewSection({super.key});
@@ -45,7 +46,7 @@ class OverviewSectionState extends State<OverviewSection> {
       statusMessage = "Calling endpoint...";
     });
 
-    final result = await fetchOverview(userId);
+    final result = await fetchOverview();
 
     if (!mounted) return;
 
@@ -88,9 +89,7 @@ class OverviewSectionState extends State<OverviewSection> {
   }
 }
 
-Future<Map<String, dynamic>> fetchOverview(
-  int userId,
-) async {
+Future<Map<String, dynamic>> fetchOverview() async {
   Map<String, dynamic> overviewData = {
     "crop_total_revenue": "-",
     "crop_total_profit": "-",
@@ -105,37 +104,47 @@ Future<Map<String, dynamic>> fetchOverview(
   String message = "Unknown status";
 
   try {
-    final url =
-        "http://127.0.0.1:8000/overview/$userId";
+    final token = await SecureStorage.getToken();
 
-    print("→ Hitting endpoint: $url");
+    if (token == null || token.isEmpty) {
+      return {
+        "data": overviewData,
+        "message": "Authentication token not found",
+      };
+    }
+
+    const url = "http://127.0.0.1:8000/overview";
+
 
     final res = await http.get(
       Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
     );
 
-    print("← Status code: ${res.statusCode}");
-    print("← Body: ${res.body}");
 
     if (res.statusCode == 200) {
       final decoded =
           jsonDecode(res.body) as Map<String, dynamic>;
 
-      if (decoded['success'] == true &&
-          decoded['data'] != null) {
+      if (decoded["success"] == true &&
+          decoded["data"] != null) {
         overviewData =
-            decoded['data'] as Map<String, dynamic>;
+            decoded["data"] as Map<String, dynamic>;
 
-        message = "Success (${res.statusCode})";
+        message = decoded["message"]?.toString() ??
+            "Success (${res.statusCode})";
       } else {
         message =
-            "Backend error: ${decoded['error_code'] ?? decoded['message'] ?? 'unknown'}";
-
-        print(message);
+            decoded["error_code"]?.toString() ??
+            decoded["message"]?.toString() ??
+            "Unknown backend error";
       }
+    } else if (res.statusCode == 401) {
+      message = "Unauthorized. Please login again.";
     } else {
       message = "Server error: ${res.statusCode}";
-      print(message);
     }
   } catch (e) {
     message = "Network error: $e";
@@ -147,7 +156,6 @@ Future<Map<String, dynamic>> fetchOverview(
     "message": message,
   };
 }
-
 class _OverviewContent extends StatelessWidget {
   final Map<String, dynamic> data;
 
@@ -158,12 +166,33 @@ class _OverviewContent extends StatelessWidget {
   static const Color leafGreen = Color(0xFF00684A);
   static const Color darkText = Color(0xFF001E2B);
 
+  String formatNumber(dynamic value) {
+    if (value == null) {
+      return "-";
+    }
+
+    if (value is num) {
+      return NumberFormat.compact().format(value);
+    }
+
+    final number = num.tryParse(value.toString());
+
+    if (number == null) {
+      return "-";
+    }
+
+    return NumberFormat.compact().format(number);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // ECONOMICS
+        
+
         const Text(
           "Economics",
           style: TextStyle(
@@ -182,7 +211,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Total Revenue",
                 value:
-                    "${NumberFormat.compact().format(data['total_revenue'])} ETB",
+                    "${formatNumber(data['total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -193,7 +222,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Total Profit",
                 value:
-                    "${NumberFormat.compact().format(data['total_profit'])} ETB",
+                    "${formatNumber(data['total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -201,6 +230,8 @@ class _OverviewContent extends StatelessWidget {
         ),
 
         const SizedBox(height: 20),
+
+        // CROP
 
         const Text(
           "Crop",
@@ -220,7 +251,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Revenue",
                 value:
-                    "${NumberFormat.compact().format(data['crop_total_revenue'])} ETB",
+                    "${formatNumber(data['crop_total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -231,7 +262,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Profit",
                 value:
-                    "${NumberFormat.compact().format(data['crop_total_profit'])} ETB",
+                    "${formatNumber(data['crop_total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -242,12 +273,13 @@ class _OverviewContent extends StatelessWidget {
 
         _StatCard(
           title: "Total Crops",
-          value:
-              "${NumberFormat.compact().format(data['total_crops'])}",
+          value: formatNumber(data['total_crops']),
           icon: Icons.grass,
         ),
 
         const SizedBox(height: 20),
+
+        // LIVESTOCK
 
         const Text(
           "Livestock",
@@ -267,7 +299,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Revenue",
                 value:
-                    "${NumberFormat.compact().format(data['livestock_total_revenue'])} ETB",
+                    "${formatNumber(data['livestock_total_revenue'])} ETB",
                 icon: Icons.trending_up,
               ),
             ),
@@ -278,7 +310,7 @@ class _OverviewContent extends StatelessWidget {
               child: _StatCard(
                 title: "Profit",
                 value:
-                    "${NumberFormat.compact().format(data['livestock_total_profit'])} ETB",
+                    "${formatNumber(data['livestock_total_profit'])} ETB",
                 icon: Icons.attach_money,
               ),
             ),
@@ -289,15 +321,13 @@ class _OverviewContent extends StatelessWidget {
 
         _StatCard(
           title: "Total Livestock",
-          value:
-              "${NumberFormat.compact().format(data['total_livestock'])}",
+          value: formatNumber(data['total_livestock']),
           icon: Icons.pets,
         ),
       ],
     );
   }
 }
-
 class _StatCard extends StatelessWidget {
   final String title;
   final String value;
