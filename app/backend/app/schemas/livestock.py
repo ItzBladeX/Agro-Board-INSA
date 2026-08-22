@@ -20,15 +20,15 @@ class LivestockBase(BaseModel):
     profit: float | None = None
     notes: str  | None = None
 
-
 class CreateLivestockRequest(LivestockBase):
-    user_id : int 
-    livestock_type_id: int 
+    livestock_type_id: int
+    # user_id removed — comes from current_user.id via JWT in the route
+
 
 class UpdateLivestockRequest(LivestockBase):
     id: int
-    user_id:int
-    livestock_type_id:int
+    livestock_type_id: int
+    # user_id removed here too
 
 class GetLivestockResponse(LivestockBase):
     id : int

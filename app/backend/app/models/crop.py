@@ -18,7 +18,7 @@ class Crop(SQLModel, table = True):
     prod_cost: float | None
     revenue: float | None
     profit: float | None
-
+    growth_month: int | None = Field(default=None)
     notes: str | None
 
 

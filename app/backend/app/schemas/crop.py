@@ -22,13 +22,13 @@ class CropBase(BaseModel):
     notes: str | None = None
 
 class CreateCropRequest(CropBase):
-    user_id: int 
     crop_type_id: int
+
 
 class UpdateCropRequest(CropBase):
     id: int
-    user_id: int 
     crop_type_id: int
+    
 
 class GetCropResponse(CropBase):
     id: int

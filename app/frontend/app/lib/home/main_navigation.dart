@@ -1,11 +1,12 @@
+import 'package:app/livestock/livestock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/profile_provider.dart';
 
 import 'home.dart';
-import '../screens/crop/crop.dart';
-import '../screens/livestock/livestock.dart';
+import '../crop/crop.dart';
+import '../livestock/livestock.dart';
 import '../screens/profile/profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -70,8 +71,8 @@ class _MainNavigationScreenState
     // Only 4 screens now
     final pages = const [
       HomePage(),
-      CropScreen(),
-      LivestockScreen(),
+      CropPage(),
+      LivestockPage(),
       ProfileScreen(),
     ];
 

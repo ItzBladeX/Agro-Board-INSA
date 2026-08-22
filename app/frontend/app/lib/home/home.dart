@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              WelcomeBanner(),
+              const WelcomeBanner(),
               WeatherSection(key: weatherKey),
               const SizedBox(height: 24),
               OverviewSection(key: overviewKey),
