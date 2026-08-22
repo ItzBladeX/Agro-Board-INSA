@@ -31,6 +31,7 @@ class _LivestockPageState extends State<LivestockPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "livestock_fab",
         backgroundColor: Colors.green,
         onPressed: () async {
           final result = await Navigator.push(

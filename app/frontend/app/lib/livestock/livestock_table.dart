@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/api_client.dart';  // adjust path to match your actual folder structure
 
 class DynamicLivestockTableBody extends StatefulWidget {
-  final String endpoint;
   final void Function(Map<String, dynamic> livestock)? onActionPressed;
 
   const DynamicLivestockTableBody({
     super.key,
-    this.endpoint = 'http://127.0.0.1:8000/livestock/get/1',
     this.onActionPressed,
   });
 
@@ -17,75 +15,76 @@ class DynamicLivestockTableBody extends StatefulWidget {
 }
 
 class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
+  final ApiClient _apiClient = ApiClient();
   List<Map<String, dynamic>> _data = [];
   bool _isLoading = false;
   String? _error;
 
   static const _hiddenKeys = {'id', 'user_id', 'livestock_type_id', 'notes'};
   static const _priorityOrder = [
-    'name',
-    'livestock_num', // keeping same field names as requested
-    'profit',
-    'revenue',
-    'prod_cost',
-    'entry_date',
-    'exit_date',
-    'prod_start_year',
-    'prod_end_year',
+    'name', 'livestock_num', 'profit', 'revenue', 'prod_cost',
+    'entry_date', 'exit_date', 'prod_start_year', 'prod_end_year',
   ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     fetchLivestock();
   }
 
   Future<void> fetchLivestock() async {
     if (_isLoading) return;
 
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
 
     try {
-      final response = await http.get(Uri.parse(widget.endpoint));
+      final response = await _apiClient.get("/livestock/get");
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
         if (json['success'] == true && json['data'] is List) {
-          setState(() {
-            _data = (json['data'] as List)
-                .map((e) => Map<String, dynamic>.from(e as Map))
-                .toList();
-            _isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              _data = (json['data'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+              _isLoading = false;
+            });
+          }
         } else {
+          if (mounted) {
+            setState(() {
+              _error = json['message']?.toString() ?? 'Unexpected response';
+              _isLoading = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
           setState(() {
-            _error = json['message']?.toString() ?? 'Unexpected response';
+            _error = 'Server error: ${response.statusCode}';
             _isLoading = false;
           });
         }
-      } else {
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
-          _error = 'Server error: ${response.statusCode}';
+          _error = 'Network error: $e';
           _isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        _error = 'Network error: $e';
-        _isLoading = false;
-      });
     }
   }
 
   Future<void> _deleteLivestock(Map<String, dynamic> item) async {
-    final userId = item['user_id'];
     final livestockId = item['id'];
 
-    if (userId == null || livestockId == null) {
+    if (livestockId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Missing user_id or livestock id')),
+        const SnackBar(content: Text('Missing livestock id')),
       );
       return;
     }
@@ -96,10 +95,7 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
         title: const Text('Delete Livestock'),
         content: Text('Are you sure you want to delete "${item['name'] ?? 'this livestock'}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -111,16 +107,14 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
 
     if (confirmed != true) return;
 
-    // Optimistic remove
     final index = _data.indexWhere((e) => e['id'] == livestockId);
     Map<String, dynamic>? removed;
-    if (index != -1) {
+    if (index != -1 && mounted) {
       setState(() => removed = _data.removeAt(index));
     }
 
     try {
-      final url = Uri.parse('http://127.0.0.1:8000/livestock/delete/$userId/$livestockId');
-      final response = await http.delete(url);
+      final response = await _apiClient.delete("/livestock/delete/$livestockId");
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         if (mounted) {
@@ -132,17 +126,14 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
           );
         }
       } else {
-        // Rollback
         if (removed != null && mounted) {
           setState(() => _data.insert(index, removed!));
         }
-
         String message = 'Failed to delete (${response.statusCode})';
         try {
           final body = jsonDecode(response.body);
           message = body['message']?.toString() ?? body['detail']?.toString() ?? message;
         } catch (_) {}
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -228,7 +219,6 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
 
   List<String> _getVisibleKeys(double width) {
     final allKeys = _data.first.keys.where((k) => !_hiddenKeys.contains(k)).toList();
-
     allKeys.sort((a, b) {
       final ia = _priorityOrder.indexOf(a);
       final ib = _priorityOrder.indexOf(b);
@@ -248,7 +238,6 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
     } else {
       maxColumns = allKeys.length;
     }
-
     return allKeys.take(maxColumns).toList();
   }
 
@@ -265,27 +254,17 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
       dataRowMaxHeight: isHeader ? 0 : 56,
       headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
       columns: [
-        ...keys.map((key) {
-          return DataColumn(
-            label: Text(
-              _formatHeaderName(key),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          );
-        }),
-        const DataColumn(
-          label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        ...keys.map((key) => DataColumn(
+              label: Text(_formatHeaderName(key), style: const TextStyle(fontWeight: FontWeight.bold)),
+            )),
+        const DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
       ],
       rows: isHeader
           ? []
           : rows.map((row) {
               return DataRow(
                 cells: [
-                  ...keys.map((key) {
-                    final value = row[key];
-                    return DataCell(Text(value?.toString() ?? '-'));
-                  }),
+                  ...keys.map((key) => DataCell(Text(row[key]?.toString() ?? '-'))),
                   DataCell(
                     PopupMenuButton<String>(
                       icon: const Icon(Icons.more_vert),
@@ -299,23 +278,15 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
                       itemBuilder: (context) => [
                         const PopupMenuItem(
                           value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit, size: 20),
-                              SizedBox(width: 8),
-                              Text('Edit'),
-                            ],
-                          ),
+                          child: Row(children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('Edit')]),
                         ),
                         const PopupMenuItem(
                           value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete, size: 20, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Delete', style: TextStyle(color: Colors.red)),
-                            ],
-                          ),
+                          child: Row(children: [
+                            Icon(Icons.delete, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ]),
                         ),
                       ],
                     ),
@@ -327,12 +298,9 @@ class DynamicLivestockTableBodyState extends State<DynamicLivestockTableBody> {
   }
 
   String _formatHeaderName(String key) {
-    return key
-        .split('_')
-        .map((word) {
-          if (word.isEmpty) return '';
-          return '${word[0].toUpperCase()}${word.substring(1)}';
-        })
-        .join(' ');
+    return key.split('_').map((word) {
+      if (word.isEmpty) return '';
+      return '${word[0].toUpperCase()}${word.substring(1)}';
+    }).join(' ');
   }
 }

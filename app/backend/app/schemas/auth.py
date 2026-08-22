@@ -8,7 +8,7 @@ class UserLogin(BaseModel):
     phone_number: str
     passwd: str
 
-#admin-part
+
 class AdminUserView(BaseModel):
     id: int
     username: str
@@ -16,6 +16,10 @@ class AdminUserView(BaseModel):
     middle_name: str
     last_name: str
     phone_number: str
+    birth_date: date | None = None
+    age: int | None = None
+    gender: str | None = None
+    land_area: float | None = None
     role: UserRole
     is_active: bool
 

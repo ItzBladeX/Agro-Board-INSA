@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/api_client.dart';
 
 class LivestockForm extends StatefulWidget {
   final Map<String, dynamic>? livestock; // null = Create, not null = Edit
@@ -62,19 +63,28 @@ class _LivestockFormState extends State<LivestockForm> {
 
   Future<void> _loadLivestockTypes() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/livestock/livestock_types'),
-      );
+      final apiClient = ApiClient();
+      final response = await apiClient.get("/livestock/livestock_types");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        setState(() {
-          livestockType = Map<String, dynamic>.from(data['data']);
-          isLoading = false;
-        });
+
+        if (data['success'] == true && data['data'] != null) {
+          setState(() {
+            livestockType = Map<String, dynamic>.from(data['data']);
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            errorMessage =
+                data['message']?.toString() ?? 'Failed to load livestock types';
+            isLoading = false;
+          });
+        }
       } else {
         setState(() {
-          errorMessage = 'Failed to load livestock types (${response.statusCode})';
+          errorMessage =
+              'Failed to load livestock types (${response.statusCode})';
           isLoading = false;
         });
       }
@@ -132,9 +142,12 @@ class _LivestockFormState extends State<LivestockForm> {
                   ? formData["name"] as String?
                   : null,
               items: livestockType.keys
-                  .map((name) => DropdownMenuItem(value: name, child: Text(name)))
+                  .map(
+                    (name) => DropdownMenuItem(value: name, child: Text(name)),
+                  )
                   .toList(),
-              validator: (v) => v == null || v.isEmpty ? 'Please select a type' : null,
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Please select a type' : null,
               onChanged: (value) {
                 setState(() {
                   formData["name"] = value;
@@ -171,28 +184,36 @@ class _LivestockFormState extends State<LivestockForm> {
             TextFormField(
               initialValue: formData["crop_yield"],
               decoration: _inputDecoration('Yield'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (v) => formData["crop_yield"] = v,
             ),
             const SizedBox(height: 12),
             TextFormField(
               initialValue: formData["prod_cost"],
               decoration: _inputDecoration('Production Cost'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (v) => formData["prod_cost"] = v,
             ),
             const SizedBox(height: 12),
             TextFormField(
               initialValue: formData["revenue"],
               decoration: _inputDecoration('Revenue'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (v) => formData["revenue"] = v,
             ),
             const SizedBox(height: 12),
             TextFormField(
               initialValue: formData["profit"],
               decoration: _inputDecoration('Profit'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (v) => formData["profit"] = v,
             ),
             const SizedBox(height: 12),
@@ -224,7 +245,9 @@ class _LivestockFormState extends State<LivestockForm> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please fill all required fields and dates'),
+                        content: Text(
+                          'Please fill all required fields and dates',
+                        ),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -301,9 +324,8 @@ Future<void> submitLivestockForm(
   bool isEditMode = false,
   dynamic livestockId,
 }) async {
-  final url = isEditMode
-      ? Uri.parse('http://127.0.0.1:8000/livestock/update')
-      : Uri.parse('http://127.0.0.1:8000/livestock/create');
+  final apiClient = ApiClient();
+  final path = isEditMode ? "/livestock/update" : "/livestock/create";
 
   String? formatDate(dynamic value) {
     if (value == null) return null;
@@ -323,12 +345,11 @@ Future<void> submitLivestockForm(
       "prod_end_year": int.tryParse(data['prod_end_year']?.toString() ?? ''),
       "entry_date": formatDate(data['entry_date']),
       "exit_date": formatDate(data['exit_date']),
-      "crop_yield": double.tryParse(data['crop_yield']?.toString() ?? ''),
+      "livestock_num": int.tryParse(data['crop_yield']?.toString() ?? ''),
       "prod_cost": double.tryParse(data['prod_cost']?.toString() ?? ''),
       "revenue": double.tryParse(data['revenue']?.toString() ?? ''),
       "profit": double.tryParse(data['profit']?.toString() ?? ''),
       "notes": data['notes'],
-      "user_id": data['user_id'],
       "livestock_type_id": data['livestock_type_id'],
     };
 
@@ -336,19 +357,37 @@ Future<void> submitLivestockForm(
       body["id"] = livestockId;
     }
 
+    print("REQUEST PATH: $path");
+    print("REQUEST BODY: ${jsonEncode(body)}");
+
     final response = isEditMode
-        ? await http.patch(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))
-        : await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+        ? await apiClient.patch(path, body: body)
+        : await apiClient.post(path, body);
+
+    print("STATUS CODE: ${response.statusCode}");
+    print("RESPONSE BODY: ${response.body}");
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isEditMode ? 'Updated successfully!' : 'Created successfully!'),
-            backgroundColor: const Color(0xFF00ED64),
-          ),
-        );
-        Navigator.pop(context, true);
+      final responseData = jsonDecode(response.body);
+      if (responseData['success'] == true) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isEditMode ? 'Updated successfully!' : 'Created successfully!'),
+              backgroundColor: const Color(0xFF00ED64),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseData['message']?.toString() ?? 'Failed to save'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } else {
       if (context.mounted) {

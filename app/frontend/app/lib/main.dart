@@ -1,106 +1,59 @@
 import 'package:flutter/material.dart';
-import "profile/profile.dart";
-import "crop/crop.dart";
-import "home/home.dart";
-import "livestock/livestock.dart";
+import 'package:provider/provider.dart';
+
+// Providers
+import 'providers/auth_provider.dart';
+import 'providers/profile_provider.dart';
+import 'providers/admin_provider.dart';
+
+// Screens
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'home/main_navigation.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminProvider(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  int _currentIndex = 0;
-
-  // MongoDB Leaf-inspired colors
-  static const Color leafGreen = Color(0xFF00684A);
-  static const Color softGreen = Color(0xFFE3FCF7);
-  static const Color darkText = Color(0xFF001E2B);
-
-  final List<Widget> pageList = [
-    const HomePage(),
-    const CropPage(),
-    const LivestockPage(),
-    const ProfilePage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Agro-Board',
+
       debugShowCheckedModeBanner: false,
+
       theme: ThemeData(
-        primaryColor: leafGreen,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: leafGreen,
-          primary: leafGreen,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: leafGreen,
-          foregroundColor: Colors.white,
-          centerTitle: true,
-          elevation: 0,
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: leafGreen,
-          unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          elevation: 8,
-        ),
+        primarySwatch: Colors.green,
+        useMaterial3: true,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "AgroBoard",
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: leafGreen,
-          centerTitle: true,
-        ),
-        body: IndexedStack(
-          index: _currentIndex,
-          children: pageList,
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          selectedItemColor: leafGreen,
-          unselectedItemColor: Colors.grey.shade600,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grass),
-              label: 'Crop',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.pets),
-              label: 'LiveStock',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
+
+      initialRoute: '/login',
+
+      routes: {
+        '/login': (context) => const LoginScreen(),
+
+        '/register': (context) => const RegisterScreen(),
+
+        '/home': (context) => const MainNavigationScreen(),
+      },
     );
   }
 }
